@@ -13,7 +13,6 @@ const FundingWrapper = styled.div`
     width: 100%;
     height: 100%;
     border-radius: 12px;
-    padding: 16px;
 	color: #3B3B3B;
     `;
 
@@ -51,7 +50,7 @@ const FundingContent = styled.div`
 export default function FundingOptions() {
 	return <FundingWrapper>
 				<Image src={iconFundingOptions.src} alt="Funding Options" style={{ marginBottom: '16px' }}/>
-				<Text fontSize="24px" fontWeight="bold">Funding Options</Text>
+				<Text fontSize="48px" fontWeight="bold">Funding Options</Text>
 				<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
 					<p>View the funding source by comparing your balances and price impact across assets in real time.</p>
 					<FundingFilters>

@@ -74,19 +74,20 @@ const MirrorText = styled.div`
 	font-family: 'Urbanist';
 	text-align: center;
 	max-width: 100%;
-	overflow: hidden;
 	white-space: nowrap;
+	padding-bottom: 50px;
 
 	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
 		white-space: normal;
 		word-break: break-word;
 		line-height: 1.1;
+		padding-bottom: 40px;
 	}
 
 	&::after {
 		content: 'Stablecoin Converter';
 		position: absolute;
-		top: 45%;
+		top: 30%;
 		left: 0;
 		right: 0;
 		font-size: clamp(32px, 8vw, 84px);
@@ -101,8 +102,8 @@ const MirrorText = styled.div`
 		mask: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
 		-webkit-mask: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
 		white-space: nowrap;
-		overflow: hidden;
 		text-align: center;
+		pointer-events: none;
 
 		@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
 			white-space: normal;

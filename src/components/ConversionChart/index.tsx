@@ -13,7 +13,6 @@ const ChartWrapper = styled.div`
     width: 100%;
     height: 100%;
     border-radius: 12px;
-    padding: 16px;
 	color: #3B3B3B;
     `;
 
@@ -51,7 +50,7 @@ const ChartContent = styled.div`
 export default function ConversionChart() {
 	return <ChartWrapper>
 				<Image src={iconConversion.src} alt="Conversion Chart" style={{ marginBottom: '16px' }}/>
-				<Text fontSize="24px" fontWeight="bold">Conversion Chart</Text>
+				<Text fontSize="48px" fontWeight="bold">Conversion Chart</Text>
 				<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
 					<p>Oracle prices vs stablecoin market prices.</p>
 					<ChartFilters>

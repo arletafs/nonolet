@@ -136,7 +136,8 @@ export function InputAmountAndTokenSelect({
 				{customSelect ? customSelect : <TokenSelect onClick={onSelectTokenChange} type={type} />}
 			</Flex>
 
-			<Flex alignItems="center" justifyContent="space-between" flexWrap="wrap" gap="8px" minH="1.375rem">
+			<Flex alignItems="center" justifyContent="space-between" flexWrap="wrap" gap="8px" minH="1.375rem"
+			width="95%" marginLeft={type === 'amountOut' ? 'auto' : undefined}>
 				<AmountUsd>
 					{amountUsd && (
 						<>

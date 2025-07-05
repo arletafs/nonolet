@@ -13,7 +13,6 @@ const StablecoinSettlementWrapper = styled.div`
     width: 100%;
     height: 100%;
     border-radius: 12px;
-    padding: 16px;
 	color: #3B3B3B;
     `;
 
@@ -51,7 +50,7 @@ const StablecoinSettlementContent = styled.div`
 export default function FundingOptions() {
 	return <StablecoinSettlementWrapper>
 				<Image src={iconStablecoinSettlement.src} alt="Stablecoin Settlement" style={{ marginBottom: '16px' }}/>
-				<Text fontSize="24px" fontWeight="bold">Stablecoin Settlement</Text>
+				<Text fontSize="48px" fontWeight="bold">Stablecoin Settlement</Text>
 				<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
 					<p>Evaluate each stablecoin’s stability, liquidity, and risk to make informed settlement choices.</p>
 					<StablecoinSettlementFilters>
