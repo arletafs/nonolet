@@ -22,7 +22,8 @@ import {
 	useBreakpoint,
 	Popover,
 	PopoverTrigger,
-	PopoverContent
+	PopoverContent,
+	Image
 } from '@chakra-ui/react';
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
@@ -69,6 +70,8 @@ import GradientButton from '../GradientButton';
 import ConversionChart from '../ConversionChart';
 import FundingOptions from '../FundingOptions';
 import StablecoinSettlement from '../StablecoinSettlement';
+import iconLlamaswap from '~/public/llamaswap.png';
+import iconDisclaimer from '~/public/disclaimer.svg';
 
 /*
 Integrated:
@@ -285,6 +288,19 @@ const ConnectButtonWrapper = styled.div`
 	& > div {
 		width: 100%;
 	}
+`;
+
+const Disclaimer = styled.div`
+	position: relative;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-end;
+	width: 100%;
+	background-color: #E4EAF3;
+	border-radius: 20px;
+	display: flex;
+	gap: 16px;
+	padding: 30px;
 `;
 
 export const SwapInputArrow = (props) => (
@@ -1436,6 +1452,16 @@ export function AggregatorContainer() {
 							{errorFetchingAllowance instanceof Error ? errorFetchingAllowance.message : 'Failed to fetch allowance'}
 						</Text>
 					) : null}
+
+					<Disclaimer>
+						<p>Powered by</p>
+						<Image src={iconLlamaswap.src} alt="Llamaswap" />
+						<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '16px', position: 'absolute', top: '0', left: '0', width: '60%', 
+							height: '100%', backgroundColor: '#F1F4F8', borderRadius: '20px', padding: '30px' }}>
+							<Image src={iconDisclaimer.src} alt="Disclaimer" />
+							<p>Our converter uses the mid-market rate for reference only. It's provided for informational purposes — actual rates may vary when you make a transaction.</p>
+						</div>
+					</Disclaimer>
 				</Body>
 
 				<ConversionChart />
