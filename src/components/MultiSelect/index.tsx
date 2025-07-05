@@ -38,19 +38,14 @@ const formatOptionLabel = ({ label, ...rest }) => {
 };
 
 const Wrapper = styled.span`
-	--background: ${({ theme }) => theme.bg6};
-	--menu-background: ${({ theme }) => theme.bg6};
+	--background: ${({ theme }) => theme.white};
+	--menu-background: ${({ theme }) => theme.white};
 	--color: ${({ theme }) => theme.text1};
 	--placeholder: ${({ theme }) => theme.text3};
-	--bg-hover: ${({ theme }) => theme.bg2};
-	--option-bg: ${({ theme }) => theme.bg2};
+	--bg-hover: ${({ theme }) => theme.text2};
+	--option-bg: ${({ theme }) => theme.text1};
 
 	& > * > * {
-		box-shadow:
-			0px 24px 32px rgba(0, 0, 0, 0.04),
-			0px 16px 24px rgba(0, 0, 0, 0.04),
-			0px 4px 8px rgba(0, 0, 0, 0.04),
-			0px 0px 1px rgba(0, 0, 0, 0.04);
 		border-radius: 12px;
 	}
 	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
@@ -62,12 +57,10 @@ const customStyles = {
 	control: (provided) => ({
 		...provided,
 		background: 'var(--background)',
-		padding: '4px 2px',
+		padding: '8px',
 		borderRadius: '12px',
-		border: 'none',
+		border: '1px solid #EAEDEF',
 		color: 'var(--color)',
-		boxShadow:
-			'0px 24px 32px rgba(0, 0, 0, 0.04), 0px 16px 24px rgba(0, 0, 0, 0.04), 0px 4px 8px rgba(0, 0, 0, 0.04), 0px 0px 1px rgba(0, 0, 0, 0.04)',
 		margin: 0,
 		zIndex: 0
 	}),

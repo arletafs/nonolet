@@ -19,8 +19,9 @@ import {
 } from '@chakra-ui/react';
 import { chunk } from 'lodash';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
+import { Slippage } from '../Slippage';
 
-export const Settings = ({ adapters, disabledAdapters, setDisabledAdapters, onClose: onExternalClose }) => {
+export const Settings = ({ adapters, disabledAdapters, setDisabledAdapters, onClose: onExternalClose, slippage, setSlippage, finalSelectedFromToken, finalSelectedToToken }) => {
 	const [isDegenModeEnabled, setIsDegenModeEnabled] = useLocalStorage('llamaswap-degenmode', false);
 	const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
 	const onCloseClick = () => {
@@ -43,6 +44,18 @@ export const Settings = ({ adapters, disabledAdapters, setDisabledAdapters, onCl
 					<ModalHeader>Settings</ModalHeader>
 					<ModalCloseButton />
 					<ModalBody>
+						<HStack mt={1} mb={2}>
+							<Heading size={'xs'}>Slippage (%)</Heading>
+						</HStack>
+						<HStack mt={1} mb={4}>
+							<Slippage
+									slippage={slippage}
+									setSlippage={setSlippage}
+									fromToken={finalSelectedFromToken?.symbol}
+									toToken={finalSelectedToToken?.symbol}
+								/>
+						</HStack>
+
 						<HStack mt={1} mb={4}>
 							<Heading size={'xs'}>Degen Mode</Heading>{' '}
 							<Tooltip label="Disable price impact warnings.">

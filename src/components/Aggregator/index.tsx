@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useAccount, useSignTypedData, useCapabilities, useSwitchChain, useBytecode } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import BigNumber from 'bignumber.js';
-import { ArrowDown } from 'react-feather';
+import { ArrowRight, ArrowLeft } from 'react-feather';
 import styled from 'styled-components';
 import {
 	useToast,
@@ -53,7 +53,6 @@ import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { getTokenBalance, useBalance } from '~/queries/useBalance';
 import { useEstimateGas } from './hooks/useEstimateGas';
-import { Slippage } from '../Slippage';
 import { PriceImpact } from '../PriceImpact';
 import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
@@ -66,6 +65,10 @@ import { zeroAddress } from 'viem';
 import { waitForCallsStatus, waitForTransactionReceipt } from 'wagmi/actions';
 import { config } from '../WalletProvider';
 import { cowSwapEthFlowSlippagePerChain } from './adapters/cowswap';
+import GradientButton from '../GradientButton';
+import ConversionChart from '../ConversionChart';
+import FundingOptions from '../FundingOptions';
+import StablecoinSettlement from '../StablecoinSettlement';
 
 /*
 Integrated:
@@ -128,43 +131,34 @@ const Body = styled.div`
 	gap: 16px;
 	padding: 16px;
 	width: 100%;
-	max-width: 30rem;
-	border: 1px solid #2f333c;
 	align-self: flex-start;
 	z-index: 1;
+	background-color: #FFFFFF;
+	position: relative;
+	border-radius: 30px;
+	text-align: left;
+	border-bottom: 15px solid #00203A;
 
-	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
+	/* @media screen and (min-width: ${({ theme }) => theme.bpLg}) {
 		position: sticky;
 		top: 24px;
-	}
-
-	box-shadow: 10px 0px 50px 10px rgba(26, 26, 26, 0.9);
-
-	border-radius: 16px;
-	text-align: left;
-
-	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
-		box-shadow: none;
-	}
+	}*/
 `;
 
 const Wrapper = styled.div`
 	width: 100%;
-	height: 100%;
 	min-height: 100%;
 	text-align: center;
 	display: flex;
 	flex-direction: column;
 	grid-row-gap: 36px;
 	margin: 0px auto 40px;
-	position: relative;
+	position: absolute;
+	align-items: center;
+	top: 40%;
 
 	h1 {
 		font-weight: 500;
-	}
-
-	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
-		top: 0px;
 	}
 
 	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
@@ -217,8 +211,9 @@ const BodyWrapper = styled.div`
 	display: flex;
 	justify-content: center;
 	gap: 16px;
-	width: 100%;
+	width: 80%;
 	z-index: 1;
+	border-radius: 16px;
 	position: relative;
 
 	& > * {
@@ -226,7 +221,7 @@ const BodyWrapper = styled.div`
 	}
 
 	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
-		flex-direction: row;
+		flex-direction: column;
 		align-items: flex-start;
 		justify-content: center;
 		gap: 24px;
@@ -241,8 +236,7 @@ const BodyWrapper = styled.div`
 const FormHeader = styled.div`
 	font-weight: bold;
 	font-size: 16px;
-	margin-bottom: 4px;
-	margin-left: 4px;
+	margin-bottom: 16px;
 	.chakra-switch,
 	.chakra-switch__track,
 	.chakra-switch__thumb {
@@ -258,10 +252,11 @@ const FormHeader = styled.div`
 const SwapWrapper = styled.div`
 	margin-top: auto;
 	min-height: 40px;
-	width: 100%;
+	width: max-content;
 	display: flex;
 	gap: 4px;
 	flex-wrap: wrap;
+	margin: 0 auto;
 
 	& > button {
 		flex: 1;
@@ -294,24 +289,25 @@ const ConnectButtonWrapper = styled.div`
 
 export const SwapInputArrow = (props) => (
 	<IconButton
-		icon={<ArrowDown size={14} />}
+		icon={
+			<Box display="flex" flexDirection="column" alignItems="center" gap={0}>
+				<ArrowRight size={18} />
+				<ArrowLeft size={18} />
+			</Box>
+		}
 		aria-label="Switch Tokens"
-		w="2.25rem"
-		h="2.25rem"
-		minW={0}
-		p="0"
-		pos="absolute"
-		top="0"
-		bottom="-36px"
-		right="0"
-		left="0"
-		m="auto"
-		borderRadius="8px"
-		border="4px solid #222429"
-		bg="#141619"
-		_hover={{ bg: '#2d3037' }}
+		w="5rem"
+		h="5rem"
+		borderRadius="50%"
+		bg="#00203A"
+		_hover={{ transform: 'translate(-50%, -50%) scale(1.05)', transition: 'all 0.2s ease-in-out' }}
 		color="white"
 		zIndex={1}
+		position="absolute"
+		left="50%"
+		top="50%"
+		transform="translate(-50%, -50%)"
+		boxShadow="0px 0px 10px 0px rgba(0, 0, 0, 0.1)"
 		{...props}
 	/>
 );
@@ -1119,6 +1115,10 @@ export function AggregatorContainer() {
 					disabledAdapters={disabledAdapters}
 					setDisabledAdapters={setDisabledAdapters}
 					onClose={() => setSettingsModalOpen(false)}
+					slippage={slippage}
+					setSlippage={setSlippage}
+					finalSelectedFromToken={finalSelectedFromToken}
+					finalSelectedToToken={finalSelectedToToken}
 				/>
 			) : null}
 
@@ -1126,21 +1126,7 @@ export function AggregatorContainer() {
 				<Body>
 					<div>
 						<FormHeader>
-							<Flex>
-								<Box>Chain</Box>
-								<Spacer />
-								<Tooltip content="Redirect requests through the DefiLlama Server to hide your IP address">
-									<FormControl display="flex" alignItems="baseline" gap="6px" justifyContent={'center'}>
-										<FormLabel htmlFor="privacy-switch" margin={0} fontSize="14px" color="gray.400">
-											Hide IP
-										</FormLabel>
-										<Switch
-											id="privacy-switch"
-											onChange={(e) => setIsPrivacyEnabled(e.target.checked)}
-											isChecked={isPrivacyEnabled}
-										/>
-									</FormControl>
-								</Tooltip>
+							<Flex width="100%" justifyContent="flex-end">
 								<SettingsIcon onClick={() => setSettingsModalOpen((open) => !open)} ml={4} mt={1} cursor="pointer" />
 								{isSmallScreen && finalSelectedFromToken && finalSelectedToToken ? (
 									<ArrowForwardIcon
@@ -1157,7 +1143,7 @@ export function AggregatorContainer() {
 						<ReactSelect options={chains} value={selectedChain} onChange={onChainChange} />
 					</div>
 
-					<Flex flexDir="column" gap="4px" pos="relative">
+					<Flex flexDir="row" gap="40px" pos="relative">
 						<InputAmountAndTokenSelect
 							placeholder={normalizedRoutes[0]?.amountIn}
 							setAmount={setAmount}
@@ -1194,13 +1180,6 @@ export function AggregatorContainer() {
 						/>
 					</Flex>
 
-					<Slippage
-						slippage={slippage}
-						setSlippage={setSlippage}
-						fromToken={finalSelectedFromToken?.symbol}
-						toToken={finalSelectedToToken?.symbol}
-					/>
-
 					<PriceImpact
 						isLoading={isLoading || fetchingTokenPrices}
 						fromTokenPrice={fromTokenPrice}
@@ -1230,11 +1209,11 @@ export function AggregatorContainer() {
 						</>
 
 						{!isConnected ? (
-							<Button colorScheme={'messenger'} onClick={openConnectModal}>
-								Connect Wallet
-							</Button>
+							<GradientButton onClick={openConnectModal}>
+								CONNECT WALLET
+							</GradientButton>
 						) : !isValidSelectedChain ? (
-							<Button
+							<GradientButton
 								colorScheme={'messenger'}
 								onClick={() => {
 									if (selectedChain) {
@@ -1250,19 +1229,19 @@ export function AggregatorContainer() {
 								}}
 							>
 								Switch Network
-							</Button>
+							</GradientButton>
 						) : insufficientBalance ? (
-							<Button colorScheme={'messenger'} aria-disabled>
+							<GradientButton colorScheme={'messenger'} aria-disabled>
 								Insufficient Balance
-							</Button>
+							</GradientButton>
 						) : !selectedRoute && isSmallScreen && finalSelectedFromToken && finalSelectedToToken ? (
-							<Button colorScheme={'messenger'} onClick={() => setUiState(STATES.ROUTES)}>
+							<GradientButton colorScheme={'messenger'} onClick={() => setUiState(STATES.ROUTES)}>
 								Select Aggregator
-							</Button>
+							</GradientButton>
 						) : hasMaxPriceImpact && !isDegenModeEnabled ? (
-							<Button colorScheme={'messenger'} aria-disabled>
+							<GradientButton colorScheme={'messenger'} aria-disabled>
 								Price impact is too large
-							</Button>
+							</GradientButton>
 						) : (
 							<>
 								{router && address && (
@@ -1458,6 +1437,10 @@ export function AggregatorContainer() {
 						</Text>
 					) : null}
 				</Body>
+
+				<ConversionChart />
+				<FundingOptions />
+				<StablecoinSettlement />
 
 				<Routes ref={routesRef} visible={uiState === STATES.ROUTES}>
 					<ArrowBackIcon

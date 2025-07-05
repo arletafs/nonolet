@@ -507,6 +507,7 @@ export const TokenSelect = ({
 							textOverflow="ellipsis"
 							fontWeight={400}
 							marginRight="auto"
+							color="#3B3B3B"
 						>
 							{token ? token.symbol : 'Select Token'}
 						</Text>
@@ -539,12 +540,11 @@ const Trigger = styled.button`
 	padding: 12px;
 	width: 100%;
 	border-radius: 8px;
-	background: #222429;
 	max-width: 128px;
 	font-size: 16px;
 
 	:hover {
-		background: #2d3037;
+		cursor: pointer;
 	}
 
 	@media (min-width: 768px) {
@@ -617,7 +617,7 @@ const Dialog = styled(Ariakit.Dialog)`
 	width: 100%;
 	height: 100%;
 	border-radius: 16px;
-	background: #131313;
+	background: #FFFFFF;
 	border: 1px solid rgba(255, 255, 255, 0.12);
 	color: white;
 	isolation: isolate;

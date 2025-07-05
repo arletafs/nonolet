@@ -1,13 +1,11 @@
 import { Heading, Image } from '@chakra-ui/react';
 import styled from 'styled-components';
-import loaderImg from '~/public/loader.png';
+import logo from '~/public/nonolet.svg';
 
 const Wrapper = styled.div`
-	position: absolute;
 	z-index: 100;
 	display: flex;
 	justify-content: space-between;
-	width: calc(100% - 32px);
 `;
 
 const Name = styled(Heading)`
@@ -23,15 +21,15 @@ const Header = ({ children }) => {
 				alignItems="center"
 				onClick={() => window.open('https://swap.defillama.com/')}
 				cursor="pointer"
+				fontFamily="Urbanist"
 			>
 				<Image
-					src={loaderImg.src}
-					w={['28px', '28px', '36px', '36px']}
-					h={['28px', '28px', '36px', '36px']}
+					src={logo.src}
+					w={['110px', '110px', '110px', '110px']}
+					h={['25px', '25px', '25px', '25px']}
 					mr="8px"
 					alt="logo"
 				/>
-				LlamaSwap
 			</Name>
 			{children}
 		</Wrapper>

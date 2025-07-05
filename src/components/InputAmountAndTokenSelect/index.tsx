@@ -8,20 +8,28 @@ import { PRICE_IMPACT_HIGH_THRESHOLD, PRICE_IMPACT_MEDIUM_THRESHOLD } from '../A
 import { TokenSelect } from './TokenSelect';
 import styled from 'styled-components';
 
-export const Container = (props: FlexProps) => (
-	<Flex
-		flexDir="column"
-		gap="8px"
-		bg="#141619"
-		color="white"
-		borderRadius="12px"
-		p={{ base: '8px', md: '16px' }}
-		border="1px solid transparent"
-		_focusWithin={{ border: '1px solid white' }}
-		isolation={'isolate'}
-		{...props}
-	/>
-);
+export const Container = (props: FlexProps & { type?: 'amountIn' | 'amountOut' }) => {
+	const { type, ...flexProps } = props;
+	
+	return (
+		<Flex
+			borderRadius="12px"
+			width="100%"
+			flexDir="column"
+			gap="8px"
+			color="#3B3B3B"
+			borderRadius="12px"
+			p={{ base: '16px', md: '20px' }}
+			isolation={'isolate'}
+			width="100%"
+			_focusWithin={{ border: '1px solid white' }}
+			boxShadow="0px 0px 10px rgba(0, 0, 0, 0.1)"
+			
+			{...flexProps}
+						
+		/>
+	);
+};
 
 export const Label = (props: TextProps) => (
 	<Text fontSize="0.875rem" fontWeight={400} color="#a2a2a2" whiteSpace="nowrap" minH="1.375rem" {...props} />
@@ -31,10 +39,9 @@ export const StyledInput = (props: InputProps) => (
 	<Input
 		focusBorderColor="transparent"
 		border="none"
-		bg="#141619"
-		color="white"
+		color="#3B3B3B"
 		_focusVisible={{ outline: 'none' }}
-		fontSize="2.25rem"
+		fontSize="1.5rem"
 		p="0"
 		_placeholder={{ color: '#5c5c5c' }}
 		overflow="hidden"
@@ -104,10 +111,11 @@ export function InputAmountAndTokenSelect({
 			: null;
 
 	return (
-		<Container>
-			<Label>{type === 'amountIn' ? 'You sell' : 'You buy'}</Label>
+		<Container type={type}>
+			<Label>{type === 'amountIn' ? 'FROM' : 'TO'}</Label>
 
-			<Flex flexDir={{ md: 'row' }} gap={{ base: '12px', md: '8px' }}>
+			<Flex flexDir={{ md: 'row' }} gap={{ base: '12px', md: '8px'}} justifyContent="space-between" bg="#F1F4F8" borderRadius="12px" p="16px" width="95%"
+			marginLeft={type === 'amountOut' ? 'auto' : undefined}>
 				<Box pos="relative">
 					<StyledInput
 						type="text"
@@ -166,7 +174,6 @@ export function InputAmountAndTokenSelect({
 				</Flex>
 			</Flex>
 
-			{type === 'amountIn' && <InputRange amount={amount} balance={balance} setAmount={setAmount} />}
 		</Container>
 	);
 }
@@ -178,165 +185,3 @@ function formatNumber(string) {
 	}
 	return string.replace(pattern, ' ');
 }
-
-const InputRange = ({ amount, balance, setAmount }) => {
-	const [inputRangeValue, setInputRangeValue] = React.useState(
-		amount && balance ? Number((+amount / +balance) * 100) : 0
-	);
-
-	return (
-		<InputRangeWrapper
-			style={
-				{
-					'--range-value': `${Math.min(inputRangeValue, 100)}%`
-				} as any
-			}
-		>
-			<RangeValue>{`${Math.min(inputRangeValue, 100).toLocaleString('en-US', { maximumFractionDigits: 2 })}%`}</RangeValue>
-			<RangeInput
-				type="range"
-				min="0"
-				max="100"
-				value={Math.min(inputRangeValue, 100)}
-				onChange={(e) => {
-					setInputRangeValue(Number(e.target.value));
-				}}
-				onMouseUp={(e) => {
-					setAmount([+(balance ?? 0) * (Number(e.currentTarget.value) / 100), '']);
-				}}
-				onTouchEnd={(e) => {
-					setAmount([+(balance ?? 0) * (Number(e.currentTarget.value) / 100), '']);
-				}}
-			/>
-			<RangeButton
-				onClick={() => {
-					setInputRangeValue(0);
-					setAmount([+(balance ?? 0) * (0 / 100), '']);
-				}}
-				$position={0}
-			/>
-			<RangeButton
-				onClick={() => {
-					setInputRangeValue(25);
-					setAmount([+(balance ?? 0) * (25 / 100), '']);
-				}}
-				$position={25}
-			/>
-			<RangeButton
-				onClick={() => {
-					setInputRangeValue(50);
-					setAmount([+(balance ?? 0) * (50 / 100), '']);
-				}}
-				$position={50}
-			/>
-			<RangeButton
-				onClick={() => {
-					setInputRangeValue(75);
-					setAmount([+(balance ?? 0) * (75 / 100), '']);
-				}}
-				$position={75}
-			/>
-			<RangeButton
-				onClick={() => {
-					setInputRangeValue(100);
-					setAmount([+(balance ?? 0) * (100 / 100), '']);
-				}}
-				$position={100}
-			/>
-		</InputRangeWrapper>
-	);
-};
-
-const InputRangeWrapper = styled.div`
-	position: relative;
-	margin: 6px 0;
-`;
-
-const RangeButton = styled.button<{ $position: number }>`
-	position: absolute;
-	top: 8px;
-	left: 0;
-	width: 10px;
-	height: 10px;
-	border-radius: 50%;
-	background-color: #2d3037;
-	border: none;
-	cursor: pointer;
-	z-index: 1;
-
-	:nth-of-type(2) {
-		left: 25%;
-	}
-
-	:nth-of-type(3) {
-		left: calc(50% - 5px);
-	}
-
-	:nth-of-type(4) {
-		left: calc(75% - 10px);
-	}
-
-	:nth-of-type(5) {
-		left: calc(100% - 10px);
-	}
-`;
-
-const RangeInput = styled.input`
-	width: 100%;
-	height: 4px;
-	border-radius: 8px;
-	-webkit-appearance: none;
-
-	&::-webkit-slider-runnable-track {
-		-webkit-appearance: none;
-		height: 4px;
-		border-radius: 8px;
-		border: none;
-		background: linear-gradient(to right, #2172e5 var(--range-value, 0%), #2d3037 var(--range-value, 0%));
-	}
-
-	&::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		background: #2172e5;
-		height: 16px;
-		width: 16px;
-		border-radius: 50%;
-		margin-top: -6px;
-		position: relative;
-		z-index: 10;
-		cursor: pointer;
-		border: none;
-	}
-
-	&::-moz-range-track {
-		-moz-appearance: none;
-		height: 4px;
-		border-radius: 8px;
-		border: none;
-		background: linear-gradient(to right, #2172e5 var(--range-value, 0%), #2d3037 var(--range-value, 0%));
-	}
-
-	&::-moz-range-thumb {
-		-moz-appearance: none;
-		background: #2172e5;
-		height: 16px;
-		width: 16px;
-		border-radius: 50%;
-		margin-top: -6px;
-		position: relative;
-		z-index: 10;
-		cursor: pointer;
-		border: none;
-	}
-`;
-
-const RangeValue = styled.span`
-	position: absolute;
-	top: -20px;
-	left: var(--range-value);
-	background-color: #2d3037;
-	padding: 2px 4px;
-	border-radius: 4px;
-	color: white;
-	font-size: 12px;
-`;

@@ -10,11 +10,16 @@ const PageWrapper = styled.div`
 	flex: 1;
 	display: flex;
 	flex-direction: column;
-	margin: 16px;
 	isolation: isolate;
+	padding: 8px;
+	box-sizing: border-box;
+
+	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
+		padding: 16px;
+	}
 
 	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
-		margin: 28px;
+		padding: 28px;
 	}
 `;
 
@@ -22,14 +27,87 @@ const Center = styled.main`
 	flex: 1;
 	display: flex;
 	flex-direction: column;
-	gap: 28px;
+	gap: 16px;
 	width: 100%;
 	min-height: 100%;
 	margin: 0 auto;
 	color: ${({ theme }) => theme.text1};
+	max-width: 100%;
+	overflow-x: hidden;
+
+	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
+		gap: 28px;
+	}
+`;
+
+const Hero = styled.div`
+	background-image: url('/hero.png');
+	background-position: center;
+	background-repeat: no-repeat;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+	padding-top: 30px;
+	width: 100%;
+	height: 50vh;
+	border-radius: 16px;
+	position: relative;
+	overflow: hidden;
+	min-height: 300px;
+
+	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
+		height: 60vh;
+		border-radius: 30px;
+	}
+`;
+
+const MirrorText = styled.div`
+	font-size: clamp(32px, 8vw, 84px);
+	font-weight: bold;
+	background: linear-gradient(180deg, #F1F4F8 0%, #3793FF 100%);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	color: transparent;
+	position: relative;
+	font-family: 'Urbanist';
+	text-align: center;
+	max-width: 100%;
+	overflow: hidden;
+	white-space: nowrap;
 
 	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
-		gap: 0px;
+		white-space: normal;
+		word-break: break-word;
+		line-height: 1.1;
+	}
+
+	&::after {
+		content: 'Stablecoin Converter';
+		position: absolute;
+		top: 45%;
+		left: 0;
+		right: 0;
+		font-size: clamp(32px, 8vw, 84px);
+		font-weight: bold;
+		background: linear-gradient(180deg, #F1F4F8 0%, #3793FF 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+		transform: scaleY(-1);
+		opacity: 0.2;
+		mask: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
+		-webkit-mask: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
+		white-space: nowrap;
+		overflow: hidden;
+		text-align: center;
+
+		@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+			white-space: normal;
+			word-break: break-word;
+		}
 	}
 `;
 
@@ -47,7 +125,7 @@ export default function Layout({ title, children, ...props }: ILayoutProps) {
 			<Head>
 				<title>{title}</title>
 			</Head>
-			<Phishing />
+			{/* <Phishing /> */}
 			<ThemeProvider>
 				<GlobalStyle />
 				<PageWrapper>
@@ -55,6 +133,11 @@ export default function Layout({ title, children, ...props }: ILayoutProps) {
 						<Header>
 							<ConnectButton {...(props as any)} />
 						</Header>
+						<Hero>
+							<MirrorText>Stablecoin Converter</MirrorText>
+							<p style={{ fontSize: '32px', color: 'white', marginBottom: '10px', fontFamily: 'Urbanist', fontWeight: 'bold' }}>Fast, accurate, and effortless conversions.</p>
+							<p style={{ fontSize: '20px', color: 'white', fontFamily: 'Urbanist' }}>Your go-to tool for swapping stablecoins in seconds.</p>
+						</Hero>
 						{children}
 					</Center>
 				</PageWrapper>

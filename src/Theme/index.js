@@ -19,7 +19,7 @@ const theme = (mode = 'dark') => {
 	return {
 		mode: isDark ? 'dark' : 'light',
 
-		text1: '#FAFAFA',
+		text1: '#3B3B3B',
 		text2: '#C3C5CB',
 		text3: '#6C7284',
 		text4: '#565A69',
@@ -38,7 +38,7 @@ const theme = (mode = 'dark') => {
 		bg7: 'rgba(7,14,15,0.7)',
 
 		//specialty colors
-		background: '#22242A',
+		background: '#F5F5F5',
 		advancedBG: 'rgba(0,0,0,0.1)',
 		divider: 'rgba(43, 43, 43, 0.435)',
 
@@ -80,6 +80,10 @@ const theme = (mode = 'dark') => {
 }
 
 export const GlobalStyle = createGlobalStyle`
+	html, body {
+		overflow-x: hidden;
+	}
+
 	body, #__next {
 		background-color: ${({ theme }) => theme.background};
 	}
@@ -92,10 +96,7 @@ export const GlobalStyle = createGlobalStyle`
     position: relative;
     color: ${({ theme }) => theme.text1};
     isolation: isolate;
-
-    ${({ theme: { minLg } }) => minLg} {
-      flex-direction: row;
-    }
+    overflow-x: hidden;
   }
 
 	#__next,

@@ -52,15 +52,12 @@ export function Slippage({ slippage, setSlippage, fromToken, toToken }) {
 		) : null
 	].filter(Boolean);
 	return (
-		<Box display="flex" flexDir="column" marginX="4px">
+		<Box display="flex" flexDir="column">
 			<Box display={['none', 'none', 'block', 'block']}>
 				{warnings.map((warning, i) => (
 					<React.Fragment key={`warning-${i}`}>{warning}</React.Fragment>
 				))}
 			</Box>
-			<Text fontWeight="400" display="flex" justifyContent="space-between" alignItems="center" fontSize="0.875rem">
-				Slippage (%)
-			</Text>
 			<Box display="flex" gap="6px" flexWrap="wrap" width="100%">
 				<input
 					value={slippage}
