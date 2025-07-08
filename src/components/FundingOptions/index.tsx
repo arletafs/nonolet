@@ -14,6 +14,7 @@ const FundingWrapper = styled.div`
     height: 100%;
     border-radius: 12px;
 	color: #3B3B3B;
+	font-family: 'Urbanist', sans-serif;
     `;
 
 const FundingFilters = styled.div`

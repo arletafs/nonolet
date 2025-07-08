@@ -4,6 +4,11 @@ import {
 } from '@chakra-ui/react';
 import styled from 'styled-components';
 import iconStablecoinSettlement from '~/public/icon-settlement.svg';
+import Loader from '~/components/Aggregator/Loader';
+import RoutesPreview from '~/components/Aggregator/RoutesPreview';
+import { useRouter } from 'next/router';
+import { useGetRoutes } from '~/queries/useGetRoutes';
+import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
 
 const StablecoinSettlementWrapper = styled.div`
 	display: flex;
@@ -14,6 +19,7 @@ const StablecoinSettlementWrapper = styled.div`
     height: 100%;
     border-radius: 12px;
 	color: #3B3B3B;
+	font-family: 'Urbanist', sans-serif;
     `;
 
 const StablecoinSettlementFilters = styled.div`
@@ -45,6 +51,7 @@ const StablecoinSettlementContent = styled.div`
 	width: 100%;
 	height: 100%;
 	margin-top: 16px;
+	font-family: 'Urbanist', sans-serif;
 `;
 
 export default function FundingOptions() {
@@ -52,7 +59,7 @@ export default function FundingOptions() {
 				<Image src={iconStablecoinSettlement.src} alt="Stablecoin Settlement" style={{ marginBottom: '16px' }}/>
 				<Text fontSize="48px" fontWeight="bold">Stablecoin Settlement</Text>
 				<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-					<p>Evaluate each stablecoin’s stability, liquidity, and risk to make informed settlement choices.</p>
+					<p>Evaluate each stablecoin's stability, liquidity, and risk to make informed settlement choices.</p>
 					<StablecoinSettlementFilters>
 						<ButtonFilter>USD</ButtonFilter>
 						<span>to</span>
@@ -60,7 +67,12 @@ export default function FundingOptions() {
 					</StablecoinSettlementFilters>
 				</div>
 				<StablecoinSettlementContent>
-					<Text>Enter table here</Text>
+					<Text fontSize="24px" fontWeight="bold">
+						Settlement Analysis Coming Soon
+					</Text>
+					<Text fontSize="16px">
+						Detailed stablecoin stability and risk metrics will be available here.
+					</Text>
 				</StablecoinSettlementContent>
 			</StablecoinSettlementWrapper>
 }

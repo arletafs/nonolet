@@ -28,11 +28,11 @@ const RouteWrapper = styled.div`
 		background-color: rgb(3 11 23);
 	}
 
-	background-color: #2d3039;
-	border: 1px solid #373944;
 	padding: 7px 15px 9px;
 	border-radius: 8px;
 	cursor: pointer;
+	color: #3B3B3B;
+	
 
 	animation: swing-in-left-fwd 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
 	@keyframes swing-in-left-fwd {

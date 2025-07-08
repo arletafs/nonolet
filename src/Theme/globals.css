@@ -1,12 +1,12 @@
-@import url('https://rsms.me/inter/inter.css');
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap');
 
 :root {
-	--font-inter: 'Inter var', sans-serif;
+	--font-inter: 'Urbanist';
 }
 
 @supports (font-variation-settings: normal) {
 	:root {
-		--font-inter: 'Inter var', sans-serif;
+		--font-inter: 'Urbanist';
 	}
 }
 
