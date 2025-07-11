@@ -1,5 +1,5 @@
 import * as Ariakit from 'ariakit/dialog';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { WarningTwoIcon } from '@chakra-ui/icons';
 import { Button, Flex, Text, Tooltip } from '@chakra-ui/react';
@@ -9,7 +9,7 @@ import { allChains } from '../WalletProvider/chains';
 import { ChevronDown, X, Search } from 'react-feather';
 import { useToken } from '../Aggregator/hooks/useToken';
 import { isAddress } from 'viem';
-import { IToken } from '~/types';
+import { IToken, IFiatCurrency } from '~/types';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { useGetSavedTokens } from '~/queries/useGetSavedTokens';
 import { useAccount } from 'wagmi';
@@ -17,7 +17,7 @@ import { useRouter } from 'next/router';
 import { useTokenBalances } from '~/queries/useTokenBalances';
 import styled from 'styled-components';
 import { formatAddress } from '~/utils/formatAddress';
-import { topTokensByChain } from '../Aggregator/constants';
+import { topTokensByChain, fiatCurrencyOptions } from '../Aggregator/constants';
 
 const Row = ({ chain, token, onClick, style }) => {
 	const blockExplorer = allChains.find((c) => c.id == chain.id)?.blockExplorers?.default;
@@ -197,6 +197,59 @@ const AddToken = ({ address, selectedChain, onClick }) => {
 	);
 };
 
+const FiatCurrencyModal = ({ dialogState, onFiatSelect }) => {
+	const filteredCurrencies = fiatCurrencyOptions;
+
+	const FiatCurrencyRow = ({ currency, onClick }) => (
+		<PairRow
+			key={currency.value}
+			onClick={() => onClick(currency)}
+			style={{ cursor: 'pointer' }}
+		>
+			<Flex 
+				alignItems="center" 
+				justifyContent="center" 
+				width="32px" 
+				height="32px" 
+				bg="#00203A" 
+				borderRadius="50%"
+				fontSize="14px"
+				fontWeight="600"
+				color="#FFFFFF"
+			>
+				{currency.symbol}
+			</Flex>
+
+			<Flex flexDir="column" whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden">
+				<Text whiteSpace="nowrap" textOverflow="ellipsis" overflow="hidden" color="#9B9B9B">
+					{currency.value}
+				</Text>
+			</Flex>
+		</PairRow>
+	);
+
+	return (
+		<>
+			<Dialog state={dialogState} backdropProps={{ className: 'dialog-backdrop' }}>
+				<DialogHeading>Select a currency</DialogHeading>
+				<DialogDismiss>
+					<X size={20} />
+				</DialogDismiss>
+
+				<div style={{ padding: '16px 0' }}>
+					{filteredCurrencies.map((currency) => (
+						<FiatCurrencyRow
+							key={currency.value}
+							currency={currency}
+							onClick={onFiatSelect}
+						/>
+					))}
+				</div>
+			</Dialog>
+		</>
+	);
+};
+
 const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoading, topTokens, tokensWithBalances }) => {
 	const [input, setInput] = useState('');
 	const onInputChange = (e) => {
@@ -252,7 +305,7 @@ const SelectModal = ({ dialogState, data, onTokenSelect, selectedChain, isLoadin
 				</DialogDismiss>
 
 				<InputSearchWrapper>
-					<Search size={17} />
+					<Search size={17} color="#9B9B9B" />
 					<InputSearch placeholder="Search... (Symbol or Address)" onChange={onInputChange} autoFocus />
 				</InputSearchWrapper>
 
@@ -360,8 +413,8 @@ export const TokenSelect = ({
 	type: 'amountIn' | 'amountOut';
 }) => {
 	const { address } = useAccount();
-
 	const router = useRouter();
+	const [selectedFiatCurrency, setSelectedFiatCurrency] = useState<IFiatCurrency | null>(null);
 
 	const {
 		fetchingFromToken,
@@ -372,6 +425,23 @@ export const TokenSelect = ({
 		selectedChain,
 		fetchingTokenList
 	} = useSelectedChainAndTokens();
+
+	// Initialize selectedFiatCurrency from URL parameter for amountOut type
+	useEffect(() => {
+		if (type === 'amountOut' && router.query.to) {
+			const fiatCurrencyMappings = {
+				'USD': { label: 'USD', value: 'USD', symbol: '$' },
+				'EUR': { label: 'EUR', value: 'EUR', symbol: '€' }
+			};
+			
+			const urlParam = router.query.to as string;
+			if (fiatCurrencyMappings[urlParam]) {
+				setSelectedFiatCurrency(fiatCurrencyMappings[urlParam]);
+			} else {
+				setSelectedFiatCurrency(null);
+			}
+		}
+	}, [type, router.query.to]);
 
 	// balances of all token's in wallet
 	const { data: tokenBalances } = useTokenBalances(address, router.isReady ? selectedChain?.id : null);
@@ -451,9 +521,7 @@ export const TokenSelect = ({
 		};
 	}, [tokensInChain, finalSelectedFromToken, finalSelectedToToken]);
 
-
 	const isLoading = type === 'amountIn' ? fetchingFromToken : fetchingToToken;
-
 	const dialogState = Ariakit.useDialogState();
 
 	const onTokenSelect = (token) => {
@@ -461,71 +529,138 @@ export const TokenSelect = ({
 		dialogState.toggle();
 	};
 
+	const onFiatSelect = (fiatCurrency: IFiatCurrency) => {
+		setSelectedFiatCurrency(fiatCurrency);
+		// Pass the fiat currency value so it can be recognized by the routing system
+		const fiatToken = {
+			address: fiatCurrency.value, // Use fiat currency code (USD, EUR, etc.)
+			label: fiatCurrency.label,
+			value: fiatCurrency.value,
+			symbol: fiatCurrency.label,
+			name: fiatCurrency.label,
+			decimals: 6,
+			logoURI: '',
+			chainId: selectedChain?.id || 1,
+			geckoId: null,
+			isFiatCurrency: true
+		};
+		onClick(fiatToken);
+		dialogState.toggle();
+	};
+
+	// Show fiat currencies for "amountOut" type
+	const showFiatCurrencies = type === 'amountOut';
+
 	return (
 		<>
 			<Trigger onClick={dialogState.toggle}>
 				{isLoading ? (
 					<Text
 						as="span"
-						color="white"
 						overflow="hidden"
 						whiteSpace="nowrap"
 						textOverflow="ellipsis"
 						fontWeight={400}
 						marginRight="auto"
+						color="#3B3B3B"
 					>
 						Loading...
 					</Text>
 				) : (
 					<>
-						{token ? (
-							<IconImage
-								src={token.logoURI}
-								onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
-								height={20}
-								width={20}
-							/>
-						) : null}
-
-						{token?.isMultichain ? (
-							<Tooltip
-								label="This token could have been affected by the multichain hack."
-								bg="black"
-								color="white"
-								fontSize="0.75rem"
-								padding="8px"
+						{showFiatCurrencies && selectedFiatCurrency ? (
+							<>
+								<Flex 
+									alignItems="center" 
+									justifyContent="center" 
+									width="20px" 
+									height="20px" 
+									bg="#00203A" 
+									borderRadius="50%"
+									fontSize="10px"
+									fontWeight="600"
+									color="#FFFFFF"
+								>
+									{selectedFiatCurrency.symbol}
+								</Flex>
+								<Text
+									as="span"
+									overflow="hidden"
+									whiteSpace="nowrap"
+									textOverflow="ellipsis"
+									fontWeight={400}
+									marginRight="auto"
+									color="#3B3B3B"
+								>
+									{selectedFiatCurrency.label}
+								</Text>
+							</>
+						) : !showFiatCurrencies && token ? (
+							<>
+								<IconImage
+									src={token.logoURI}
+									onError={(e) => (e.currentTarget.src = token.logoURI2 || '/placeholder.png')}
+									height={20}
+									width={20}
+								/>
+								{token?.isMultichain ? (
+									<Tooltip
+										label="This token could have been affected by the multichain hack."
+										bg="black"
+										color="white"
+										fontSize="0.75rem"
+										padding="8px"
+									>
+										<WarningTwoIcon color={'orange.200'} />
+									</Tooltip>
+								) : null}
+								<Text
+									as="span"
+									overflow="hidden"
+									whiteSpace="nowrap"
+									textOverflow="ellipsis"
+									fontWeight={400}
+									marginRight="auto"
+									color="#3B3B3B"
+								>
+									{token.symbol}
+								</Text>
+							</>
+						) : (
+							<Text
+								as="span"
+								overflow="hidden"
+								whiteSpace="nowrap"
+								textOverflow="ellipsis"
+								fontWeight={400}
+								marginRight="auto"
+								color="#3B3B3B"
 							>
-								<WarningTwoIcon color={'orange.200'} />
-							</Tooltip>
-						) : null}
-
-						<Text
-							as="span"
-							color="white"
-							overflow="hidden"
-							whiteSpace="nowrap"
-							textOverflow="ellipsis"
-							fontWeight={400}
-							marginRight="auto"
-							color="#3B3B3B"
-						>
-							{token ? token.symbol : 'Select Token'}
-						</Text>
+								{showFiatCurrencies ? 'Select Currency' : 'Select Token'}
+							</Text>
+						)}
 					</>
 				)}
 
 				<ChevronDown size={16} />
 			</Trigger>
 			{dialogState.open ? (
-				<SelectModal
-					dialogState={dialogState}
-					data={tokens}
-					onTokenSelect={onTokenSelect}
-					selectedChain={selectedChain}
-					isLoading={fetchingTokenList}
-					topTokens={topTokens}
-					tokensWithBalances={tokensWithBalances}
-				/>
+				showFiatCurrencies ? (
+					<FiatCurrencyModal
+						dialogState={dialogState}
+						onFiatSelect={onFiatSelect}
+					/>
+				) : (
+					<SelectModal
+						dialogState={dialogState}
+						data={tokens}
+						onTokenSelect={onTokenSelect}
+						selectedChain={selectedChain}
+						isLoading={fetchingTokenList}
+						topTokens={topTokens}
+						tokensWithBalances={tokensWithBalances}
+					/>
+				)
 			) : null}
 		</>
 	);
@@ -592,7 +727,6 @@ const InputSearchWrapper = styled.div`
 `;
 
 const InputSearch = styled.input`
-	background: rgba(27, 27, 27, 1);
 	border-radius: 8px;
 	height: 52px;
 	flex-shrink: 0;
@@ -600,6 +734,8 @@ const InputSearch = styled.input`
 	margin: 0 16px;
 	font-size: 16px;
 	font-weight: 500;
+	color: #3B3B3B;
+	border: 1px solid #3B3B3B;
 	&::placeholder {
 		color: #9b9b9b;
 	}
@@ -682,10 +818,11 @@ const TopToken = styled.button`
 	font-weight: 500;
 	font-size: 14px;
 	padding: 4px;
-	background: rgba(27, 27, 27, 1);
+	background: #E4EAF3;
 	height: 64px;
 	width: 64px;
 	border-radius: 8px;
+	color: #3B3B3B;
 
 	&:hover {
 		background-color: rgba(246, 246, 246, 0.1);

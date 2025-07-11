@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { zeroAddress } from 'viem';
 import { useAccount } from 'wagmi';
 import { getAllChains } from '~/components/Aggregator/router';
+import { fiatCurrencyMappings } from '~/components/Aggregator/constants';
 
 const chains = getAllChains();
 
@@ -19,7 +20,11 @@ export function useQueryParams() {
 
 	const chainName = typeof chainOnURL === 'string' ? chainOnURL.toLowerCase() : 'ethereum';
 	const fromTokenAddress = typeof fromToken === 'string' ? fromToken.toLowerCase() : null;
-	const toTokenAddress = typeof toToken === 'string' ? toToken.toLowerCase() : null;
+	
+	// Preserve case for fiat currencies, convert to lowercase for regular tokens
+	const toTokenAddress = typeof toToken === 'string' 
+		? (fiatCurrencyMappings[toToken.toUpperCase()] ? toToken.toUpperCase() : toToken.toLowerCase())
+		: null;
 
 	useEffect(() => {
 		if (router.isReady && !chainOnURL) {

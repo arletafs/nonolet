@@ -1,8 +1,8 @@
 import styled from 'styled-components';
 import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
-import { Flex, Skeleton, Text } from '@chakra-ui/react';
-import { AlertCircle, Gift, Unlock, ZapOff } from 'react-feather';
+import { Flex, Skeleton, Text, Image } from '@chakra-ui/react';
+import { AlertCircle, Gift, Table, Unlock, ZapOff } from 'react-feather';
 import { GasIcon } from '../Icons';
 import { formattedNum } from '~/utils';
 
@@ -95,40 +95,24 @@ const Route = ({
 		>
 			<RouteRow>
 				{inputAmount ? (
-					<Flex alignItems="baseline">
-						<Text fontSize={19} fontWeight={700} color={'#FAFAFA'}>
-							{formattedNum(inputAmount)}{' '}
-						</Text>
-						<Text fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#ccc'}>
+					<Flex alignItems="baseline" gap="8px">
+						<Image src={fromToken?.logoURI} alt={fromToken?.symbol} width={24} height={24} />
+						<Text fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#3B3B3B'}>
 							{fromToken?.symbol}{' '}
 						</Text>
 					</Flex>
 				) : (
-					<Flex alignItems="baseline">
-						<Text fontSize={19} fontWeight={700} color={'#FAFAFA'}>
-							{formattedNum(amount)}{' '}
-						</Text>
-						<Text fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#ccc'}>
+					<Flex alignItems="baseline" gap="8px">
+						<Image src={toToken?.logoURI} alt={toToken?.symbol} width={24} height={24} />
+						<Text fontSize={19} fontWeight={600} marginLeft={'4px'} color={'#3B3B3B'}>
 							{toToken?.symbol}{' '}
 						</Text>
 					</Flex>
 				)}
-				<Text fontWeight={500} fontSize={16} color={'#FAFAFA'}>
-					<Flex as="span" alignItems="center" gap="8px">
-						{index === 0 ? (
-							<Text as="span" color="#059669" fontSize={14} fontWeight={700}>
-								BEST
-							</Text>
-						) : Number.isFinite(lossPercent) ? (
-							<Text as="span" color="red.300" fontSize={12}>
-								-{Math.abs(100 - lossPercent * 100).toFixed(2)}%
-							</Text>
-						) : null}
-					</Flex>
-				</Text>
 			</RouteRow>
 
 			<RouteRow>
+				{/*
 				{inputAmount ? (
 					<Flex className="mobile-column" as="span" columnGap="4px" display="flex" color="gray.400" fontWeight={500}>
 						Input Amount
@@ -158,6 +142,7 @@ const Route = ({
 						) : afterFees ? null : null}
 					</Flex>
 				)}
+				
 				<Text display="flex" columnGap="6px" color={'gray.400'} fontWeight={500} ml="auto">
 					<Text
 						display="flex"
@@ -185,6 +170,8 @@ const Route = ({
 								{txGas}
 							</Text>
 						)}
+
+						
 						<Text display="flex" gap="3px">
 							via
 							{isApproved ? (
@@ -201,8 +188,14 @@ const Route = ({
 								</Tooltip>
 							) : null}
 						</Text>
+						
 					</Text>
 				</Text>
+
+				<Text>
+					Amount: {formattedNum(amount)}
+				</Text>*/}
+				
 			</RouteRow>
 		</RouteWrapper>
 	);
@@ -233,11 +226,10 @@ const RouteWrapper = styled.div<{ selected?: boolean; best?: boolean }>`
 		background-color: rgb(3 11 23);
 	}
 
-	background-color: ${({ selected }) => (selected ? ' #161616;' : '#2d3039;')};
-	border: 1px solid #373944;
 	padding: 7px 15px 9px;
 	border-radius: 8px;
 	cursor: pointer;
+	color: #3B3B3B;
 
 	animation: swing-in-left-fwd 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
 	@keyframes swing-in-left-fwd {
@@ -256,9 +248,6 @@ const RouteWrapper = styled.div<{ selected?: boolean; best?: boolean }>`
 		opacity: 0;
 		transition: opacity 0.2s linear;
 	}
-	&:hover {
-		background-color: #161616;
-	}
 	&:hover,
 	&.is-selected,
 	&:first-of-type {
@@ -270,9 +259,11 @@ const RouteWrapper = styled.div<{ selected?: boolean; best?: boolean }>`
 
 const RouteRow = styled.div`
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: space-between;
 	gap: 16px;
+	color: #3B3B3B;
+	flex-direction: column;
 
 	img {
 		width: 15px;

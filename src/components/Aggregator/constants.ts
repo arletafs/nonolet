@@ -345,3 +345,139 @@ export const topTokensByChain = {
 };
 
 export const EIP_5792_CHAINS = [1, 42161, 8453, 80094, 56, 100, 57073, 10, 130];
+
+// Fallback token information for stablecoins that might not be in chainTokenList
+export const fallbackStablecoinInfo = {
+	// EURC tokens
+	'0x1abaea1f7c830bd89acc67ec4af516284b1bc33c': {
+		address: '0x1abaea1f7c830bd89acc67ec4af516284b1bc33c',
+		symbol: 'EURC',
+		name: 'EUR Coin',
+		decimals: 6,
+		logoURI: 'https://token-icons.llamao.fi/icons/tokens/1/0x1abaea1f7c830bd89acc67ec4af516284b1bc33c?h=48&w=48',
+		chainId: 1
+	},
+	'0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42': {
+		address: '0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42',
+		symbol: 'EURC',
+		name: 'EUR Coin',
+		decimals: 6,
+		logoURI: 'https://token-icons.llamao.fi/icons/tokens/8453/0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42?h=48&w=48',
+		chainId: 8453
+	},
+	'0xad3a2fa51b1fe18b45381b9ecec21d83e64f75dd': {
+		address: '0xad3a2fa51b1fe18b45381b9ecec21d83e64f75dd',
+		symbol: 'EURC',
+		name: 'EUR Coin',
+		decimals: 6,
+		logoURI: 'https://token-icons.llamao.fi/icons/tokens/137/0xad3a2fa51b1fe18b45381b9ecec21d83e64f75dd?h=48&w=48',
+		chainId: 137
+	},
+	'0x07d11e2ae24ad1bb3c0e157fb89603ac2b0e3b80': {
+		address: '0x07d11e2ae24ad1bb3c0e157fb89603ac2b0e3b80',
+		symbol: 'EURC',
+		name: 'EUR Coin',
+		decimals: 6,
+		logoURI: 'https://token-icons.llamao.fi/icons/tokens/42161/0x07d11e2ae24ad1bb3c0e157fb89603ac2b0e3b80?h=48&w=48',
+		chainId: 42161
+	},
+	'0xc891eb4cbdeff6e073e859e987815ed1505c2acd': {
+		address: '0xc891eb4cbdeff6e073e859e987815ed1505c2acd',
+		symbol: 'EURC',
+		name: 'EUR Coin',
+		decimals: 6,
+		logoURI: 'https://token-icons.llamao.fi/icons/tokens/43114/0xc891eb4cbdeff6e073e859e987815ed1505c2acd?h=48&w=48',
+		chainId: 43114
+	}
+};
+
+// Fiat currency mappings to stablecoins by chain
+export const fiatCurrencyMappings = {
+	USD: {
+		1: [
+			'0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
+			'0xdac17f958d2ee523a2206206994597c13d831ec7', // USDT
+			'0x820c137fa70c8691f0e44dc420a5e53c168921dc', // USDS
+			'0x6b175474e89094c44da98b954eedeac495271d0f', // DAI
+			'0x4c9edd5852cd905f086c759e8383e09bff1e68b3'  // USDe
+		],
+		56: [
+			'0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d', // USDC
+			'0x55d398326f99059ff775485246999027b3197955', // USDT
+			'0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3'  // DAI
+		],
+		137: [
+			'0x3c499c542cef5e3811e1192ce70d8cc03d5c3359', // USDC
+			'0xc2132d05d31c914a87c6611c10748aeb04b58e8f', // USDT
+			'0x8f3cf7ad23cd3cadbd9735aff958023239c6a063'  // DAI
+		],
+		10: [
+			'0x0b2c639c533813f4aa9d7837caf62653d097ff85', // USDC
+			'0x94b008aa00579c1307b0ef2c499ad98a8ce58e58', // USDT
+			'0xda10009cbd5d07dd0cecc66161fc93d7c9000da1'  // DAI
+		],
+		42161: [
+			'0xaf88d065e77c8cc2239327c5edb3a432268e5831', // USDC
+			'0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9', // USDT
+			'0xda10009cbd5d07dd0cecc66161fc93d7c9000da1'  // DAI
+		],
+		43114: [
+			'0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e', // USDC
+			'0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7', // USDT
+			'0xd586e7f844cea2f87f50152665bcbc2c279d8d70'  // DAI
+		],
+		100: [
+			'0xddafbb505ad214d7b80b1f830fccc89b60fb7a83', // USDC
+			'0x4ecaba5870353805a9f068101a40e0f32ed605c6'  // USDT
+		],
+		324: [
+			'0x1d17CBcF0D6D143135aE902365D2E5e2A16538D4'  // USDC
+		],
+		1101: [
+			'0xa8ce8aee21bc2a48a5ef670afcc9274c7bbbc035', // USDC
+			'0x1e4a5963abfd975d8c9021ce480b42188849d41d'  // USDT
+		],
+		8453: [
+			'0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', // USDC
+			'0x820c137fa70c8691f0e44dc420a5e53c168921dc'  // USDS
+		],
+		59144: [
+			'0x176211869ca2b568f2a7d4ee941e073a821ee1ff', // USDC
+			'0xa219439258ca9da29e9cc4ce5596924745e12b93'  // USDT
+		],
+		534352: [
+			'0x06efdbff2a14a7c8e15944d1f4a48f9f95f663a4', // USDC
+			'0xf55bec9cafdbe8730f096aa55dad6d22d44099df'  // USDT
+		],
+		146: [
+			'0x29219dd400f2bf60e5a23d13be72b486d4038894'  // USDC.e
+		],
+		130: [
+			'0x078D782b760474a361dDA0AF3839290b0EF57AD6', // USDC
+			'0x9151434b16b9763660705744891fA906F660EcC5'  // USDT
+		]
+	},
+	EUR: {
+		1: [
+			'0x1abaea1f7c830bd89acc67ec4af516284b1bc33c'  // EURC
+		],
+		8453: [
+			'0x60a3e35cc302bfa44cb288bc5a4f316fdb1adb42'  // EURC
+		],
+		137: [
+			'0xad3a2fa51b1fe18b45381b9ecec21d83e64f75dd'  // EURC
+		],
+		42161: [
+			'0x07d11e2ae24ad1bb3c0e157fb89603ac2b0e3b80'  // EURC
+		],
+		43114: [
+			'0xc891eb4cbdeff6e073e859e987815ed1505c2acd'  // EURC
+		]
+	}
+};
+
+// Fiat currency options for the dropdown
+export const fiatCurrencyOptions = [
+	{ value: 'USD', label: 'USD', symbol: '$' },
+	{ value: 'EUR', label: 'EUR', symbol: '€' }
+];

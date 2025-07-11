@@ -15,6 +15,13 @@ export interface IToken {
 	isMultichain?: boolean;
 }
 
+export interface IFiatCurrency {
+	value: string;
+	label: string;
+	symbol: string;
+	isFiatCurrency?: boolean;
+}
+
 export interface IPool {
 	apu: number;
 	apy: number;
@@ -58,4 +65,36 @@ export interface IPool {
 	volumeUsd1d: number | null;
 	volumeUsd7d: number | null;
 	config: { name: string; category: string };
+}
+
+export interface IRoute {
+	name: string;
+	price: {
+		amountReturned: string;
+		estimatedGas: string;
+		tokenApprovalAddress: string;
+		logo: string;
+		isGaslessApproval?: boolean;
+		rawQuote?: {};
+		isMEVSafe?: boolean;
+		feeAmount?: number;
+		isSignatureNeededForSwap?: boolean;
+	};
+	airdrop: boolean;
+	fromAmount: string;
+	txData: string;
+	l1Gas: number | 'Unknown';
+	tx: {
+		from: string;
+		to: string;
+		data: string;
+	};
+	isOutputAvailable: boolean;
+	isGasless: boolean;
+
+	// Specific properties for fiat currency routing
+	actualTargetToken?: string;
+	originalToToken?: string;
+	isFiatCurrencyRoute?: boolean;
+	targetToken?: string;
 }
