@@ -10,7 +10,7 @@ import styled from 'styled-components';
 
 export const Container = (props: FlexProps & { type?: 'amountIn' | 'amountOut' }) => {
 	const { type, ...flexProps } = props;
-	
+
 	return (
 		<Flex
 			borderRadius="12px"
@@ -18,15 +18,13 @@ export const Container = (props: FlexProps & { type?: 'amountIn' | 'amountOut' }
 			flexDir="column"
 			gap="8px"
 			color="#3B3B3B"
-			borderRadius="12px"
 			p={{ base: '16px', md: '20px' }}
 			isolation={'isolate'}
-			width="100%"
 			_focusWithin={{ border: '1px solid white' }}
 			boxShadow="0px 0px 10px rgba(0, 0, 0, 0.1)"
-			
+
 			{...flexProps}
-						
+
 		/>
 	);
 };
@@ -114,8 +112,8 @@ export function InputAmountAndTokenSelect({
 		<Container type={type}>
 			<Label>{type === 'amountIn' ? 'FROM' : 'TO'}</Label>
 
-			<Flex flexDir={{ md: 'row' }} gap={{ base: '12px', md: '8px'}} justifyContent="space-between" bg="#F1F4F8" borderRadius="12px" p="16px" width="95%"
-			marginLeft={type === 'amountOut' ? 'auto' : undefined}>
+			<Flex flexDir={{ md: 'row' }} gap={{ base: '12px', md: '8px' }} justifyContent="space-between" bg="#F1F4F8" borderRadius="12px" p="16px" width="95%"
+				marginLeft={type === 'amountOut' ? 'auto' : undefined}>
 				<Box pos="relative">
 					<StyledInput
 						type="text"
@@ -137,7 +135,7 @@ export function InputAmountAndTokenSelect({
 			</Flex>
 
 			<Flex alignItems="center" justifyContent="space-between" flexWrap="wrap" gap="8px" minH="1.375rem"
-			width="95%" marginLeft={type === 'amountOut' ? 'auto' : undefined}>
+				width="95%" marginLeft={type === 'amountOut' ? 'auto' : undefined}>
 				<AmountUsd>
 					{amountUsd && (
 						<>
