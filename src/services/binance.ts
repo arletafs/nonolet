@@ -60,19 +60,176 @@ interface BinanceChartData {
 // USD stablecoins supported on Binance (ordered by typical volume)
 const USD_STABLECOINS = ['USDT', 'USDC', 'BUSD', 'FDUSD'] as const;
 
-// Token symbol mappings (common DeFi tokens to Binance symbols)
+// Comprehensive token symbol mappings for DeFi -> Binance
 const TOKEN_MAPPINGS: Record<string, string> = {
+    // Wrapped native tokens
     'WETH': 'ETH',
     'WBTC': 'BTC',
-    'STETH': 'ETH', // Approximate with ETH
     'WMATIC': 'MATIC',
     'WBNB': 'BNB',
     'WAVAX': 'AVAX',
     'WFTM': 'FTM',
     'WONE': 'ONE',
     'WGLMR': 'GLMR',
-    'USDC.E': 'USDC' // Bridged USDC
+    'WSOL': 'SOL',
+    'WKLAY': 'KLAY',
+    'WROSE': 'ROSE',
+
+    // Staking derivatives
+    'STETH': 'ETH', // Lido staked ETH - approximate with ETH
+    'RETH': 'ETH', // Rocket Pool ETH
+    'CBETH': 'ETH', // Coinbase wrapped staked ETH
+    'WSTETH': 'ETH', // Wrapped staked ETH
+    'SFRXETH': 'ETH', // Staked Frax ETH
+
+    // Bridged tokens
+    'USDC.E': 'USDC', // Avalanche/Polygon bridged USDC
+    'USDT.E': 'USDT', // Avalanche bridged USDT
+    'WETH.E': 'ETH', // Avalanche bridged ETH
+    'BTC.B': 'BTC', // Avalanche wrapped BTC
+
+    // Alternative symbols
+    'AMPL': 'AMPL', // Keep as is - exists on Binance
+    'YFI': 'YFI',
+    'SUSHI': 'SUSHI',
+    'AAVE': 'AAVE',
+    'UNI': 'UNI',
+    'COMP': 'COMP',
+    'MKR': 'MKR',
+    'SNX': 'SNX',
+    'CRV': 'CRV',
+    'BAL': 'BAL',
+    'LINK': 'LINK',
+    'GRT': 'GRT',
+    'LDO': 'LDO',
+    'ENS': 'ENS',
+    'OP': 'OP',
+    'ARB': 'ARB',
+    'MATIC': 'MATIC',
+    'AVAX': 'AVAX',
+    'FTM': 'FTM',
+    'ATOM': 'ATOM',
+    'DOT': 'DOT',
+    'ADA': 'ADA',
+    'SOL': 'SOL',
+    'NEAR': 'NEAR',
+    'ALGO': 'ALGO',
+    'LUNA': 'LUNA',
+    'EGLD': 'EGLD',
+    'KLAY': 'KLAY',
+    'FLOW': 'FLOW',
+    'ICP': 'ICP',
+    'VET': 'VET',
+    'XTZ': 'XTZ',
+    'THETA': 'THETA',
+    'FIL': 'FIL',
+    'TRX': 'TRX',
+    'EOS': 'EOS',
+    'NEO': 'NEO',
+    'IOTA': 'IOTA',
+    'XLM': 'XLM',
+    'XMR': 'XMR',
+    'DASH': 'DASH',
+    'ZEC': 'ZEC',
+    'ETC': 'ETC',
+    'LTC': 'LTC',
+    'BCH': 'BCH',
+    'BSV': 'BSV',
+    'DOGE': 'DOGE',
+    'SHIB': 'SHIB',
+    '1INCH': '1INCH',
+    'BAT': 'BAT',
+    'ZRX': 'ZRX',
+    'REN': 'REN',
+    'KNC': 'KNC',
+    'BAND': 'BAND',
+    'ALPHA': 'ALPHA',
+    'PERP': 'PERP',
+    'IMX': 'IMX',
+    'SAND': 'SAND',
+    'MANA': 'MANA',
+    'AXS': 'AXS',
+    'GALA': 'GALA',
+    'ENJ': 'ENJ',
+    'CHZ': 'CHZ'
 };
+
+// Cache for validated Binance symbols to avoid repeated API calls
+let binanceSymbolsCache: Set<string> | null = null;
+let lastCacheUpdate = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Get all trading symbols from Binance (cached)
+ */
+async function getBinanceSymbols(): Promise<Set<string>> {
+    const now = Date.now();
+
+    if (binanceSymbolsCache && (now - lastCacheUpdate) < CACHE_DURATION) {
+        return binanceSymbolsCache;
+    }
+
+    try {
+        const exchangeInfo = await binanceRequest<{
+            symbols: Array<{ symbol: string; status: string; baseAsset: string; quoteAsset: string; }>
+        }>('/exchangeInfo');
+
+        binanceSymbolsCache = new Set(
+            exchangeInfo.symbols
+                .filter(s => s.status === 'TRADING')
+                .map(s => s.baseAsset)
+        );
+
+        lastCacheUpdate = now;
+        return binanceSymbolsCache;
+    } catch (error) {
+        console.warn('Failed to fetch Binance symbols:', error);
+        // Return fallback cache or empty set
+        return binanceSymbolsCache || new Set();
+    }
+}
+
+/**
+ * Normalize token symbol for Binance API with validation
+ */
+async function normalizeBinanceSymbol(symbol: string): Promise<string | null> {
+    const upperSymbol = symbol.toUpperCase();
+
+    // 1. Check direct mapping first
+    if (TOKEN_MAPPINGS[upperSymbol]) {
+        const mapped = TOKEN_MAPPINGS[upperSymbol];
+        console.log(`Token mapping: ${upperSymbol} -> ${mapped}`);
+        return mapped;
+    }
+
+    // 2. Try the symbol as-is first
+    const binanceSymbols = await getBinanceSymbols();
+    if (binanceSymbols.has(upperSymbol)) {
+        console.log(`Direct symbol found: ${upperSymbol}`);
+        return upperSymbol;
+    }
+
+    // 3. Try safe transformations only for known patterns
+    const transformations: Array<{ pattern: RegExp; replacement: string; description: string }> = [
+        { pattern: /^W(ETH|BTC|MATIC|BNB|AVAX|FTM|SOL)$/, replacement: '$1', description: 'Wrapped token' },
+        { pattern: /^(.+)\.E$/, replacement: '$1', description: 'Bridged token (.e suffix)' },
+        { pattern: /^ST(ETH)$/, replacement: '$1', description: 'Staked token' }
+    ];
+
+    for (const { pattern, replacement, description } of transformations) {
+        if (pattern.test(upperSymbol)) {
+            const transformed = upperSymbol.replace(pattern, replacement);
+            if (binanceSymbols.has(transformed)) {
+                console.log(`${description} transformation: ${upperSymbol} -> ${transformed}`);
+                return transformed;
+            }
+        }
+    }
+
+    // 4. Log failed normalization for debugging
+    console.warn(`Failed to normalize token symbol: ${upperSymbol} (not found on Binance)`);
+    return null;
+}
 
 /**
  * Make request to Binance public API (no authentication needed)
@@ -93,29 +250,16 @@ async function binanceRequest<T>(endpoint: string, params: Record<string, string
 }
 
 /**
- * Normalize token symbol for Binance API
- */
-function normalizeBinanceSymbol(symbol: string): string {
-    const upperSymbol = symbol.toUpperCase();
-
-    // Check direct mapping first
-    if (TOKEN_MAPPINGS[upperSymbol]) {
-        return TOKEN_MAPPINGS[upperSymbol];
-    }
-
-    // Apply common transformations
-    return upperSymbol
-        .replace(/^W/, '') // Remove 'W' prefix (WETH -> ETH)
-        .replace(/\.E$/, '') // Remove '.e' suffix (USDC.e -> USDC)
-        .replace(/^ST/, ''); // Remove 'ST' prefix (STETH -> ETH)
-}
-
-/**
  * Find the best USD stablecoin market for a given base asset by 24h volume
  */
 export async function findBestUSDMarket(baseSymbol: string): Promise<string | null> {
     try {
-        const normalizedBase = normalizeBinanceSymbol(baseSymbol);
+        const normalizedBase = await normalizeBinanceSymbol(baseSymbol);
+
+        if (!normalizedBase) {
+            console.warn(`Cannot find Binance market for token: ${baseSymbol} (normalization failed)`);
+            return null;
+        }
 
         // Get 24hr ticker data for all symbols
         const tickerData = await binanceRequest<BinanceTicker24hr[]>('/ticker/24hr');
