@@ -47,6 +47,7 @@ import { useLocalStorage } from '~/hooks/useLocalStorage';
 import SwapConfirmation from './SwapConfirmation';
 import { getTokenBalance, useBalance } from '~/queries/useBalance';
 import { useEstimateGas } from './hooks/useEstimateGas';
+import { VolatilityScoreCell } from '~/components/VolatilityScoreCell';
 import { PriceImpact } from '../PriceImpact';
 import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
@@ -1566,7 +1567,11 @@ export function AggregatorContainer() {
 						toToken={finalSelectedToToken || (effectiveToToken ? { ...effectiveToToken, geckoId: null } : null)}
 						chain={selectedChain?.value}
 					/>
-					<FundingOptions />
+					<FundingOptions
+						onTokenSelect={onFromTokenChange}
+						selectedRoute={selectedRoute}
+						normalizedRoutes={normalizedRoutes}
+					/>
 
 					<StablecoinSettlementWrapper>
 						<Image src={iconStablecoinSettlement.src} alt="Stablecoin Settlement" style={{ marginBottom: '16px' }} />
@@ -1626,7 +1631,12 @@ export function AggregatorContainer() {
 								<thead>
 									<tr>
 										<th>Stablecoin</th>
-										<th>Volatility Score</th>
+										<th>
+											<div style={{ textAlign: 'left' }}>
+												Volatility Score
+												<div style={{ fontSize: '10px', fontWeight: 'normal', textAlign: 'left' }}>via Santiment</div>
+											</div>
+										</th>
 										<th>Liquidity Score</th>
 										<th>Risk Score</th>
 										<th>Price Impact</th>
@@ -1674,7 +1684,12 @@ export function AggregatorContainer() {
 															isGasless={r?.isGasless}
 														/>
 													</td>
-													<td>TBU</td>
+													<td>
+														<VolatilityScoreCell
+															token={r.actualToToken || finalSelectedToToken || effectiveToToken!}
+															chainId={selectedChain?.id}
+														/>
+													</td>
 													<td>TBU</td>
 													<td>TBU</td>
 													<td>

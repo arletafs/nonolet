@@ -226,7 +226,7 @@ export default function ConversionChart({ fromToken, toToken, chain }: Conversio
 
 			<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
 				<p>
-					{tokenSymbol ? `${tokenSymbol} price: Historical market data vs current execution price (last 24h)` : 'Historical market prices vs current execution prices.'}
+					{tokenSymbol ? `${tokenSymbol} price: Historical market data vs current execution price` : 'Historical market prices vs current execution prices.'}
 				</p>
 				<ChartFilters>
 					{(['1D', '1W', '1M'] as TimeFilter[]).map(filter => (

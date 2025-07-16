@@ -1,3 +1,41 @@
+# 🚀 Nonolet
+
+**Enhanced DEX aggregator interface based on [LlamaSwap](https://swap.defillama.com)**
+
+Nonolet extends LlamaSwap with additional features including Santiment volatility scores, enhanced funding options, and Binance price integration.
+
+## 🆕 Additional Features
+
+- **🔢 Santiment Volatility Scores**: Real-time stablecoin stability ratings
+- **💰 Enhanced Funding Options**: Smart asset selection with balance detection  
+- **📊 Binance Price Integration**: Live market data vs oracle price comparison
+- **🎯 Improved UX**: Better stablecoin detection and USD formatting
+
+## 🚀 Quick Start
+
+```bash
+# Clone and setup
+git clone https://github.com/arletafs/nonolet.git
+cd nonolet
+
+# Automated setup
+chmod +x quick-setup.sh && ./quick-setup.sh
+
+# Or manual setup
+yarn install
+yarn dev
+```
+
+Visit: **http://localhost:3000/**
+
+## 📚 Documentation
+
+For comprehensive setup instructions, troubleshooting, and development guide, see **[SETUP.md](./SETUP.md)**
+
+---
+
+## Original LlamaSwap Information
+
 ### Join the community & report bugs
 
 If you wish to report an issue, please join our [Discord](https://discord.swap.defillama.com/)
