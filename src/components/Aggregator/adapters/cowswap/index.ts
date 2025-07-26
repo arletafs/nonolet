@@ -50,7 +50,7 @@ export function approvalAddress() {
 }
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
-const feeRecipientAddress = '0x1713B79e3dbb8A76D80e038CA701A4a781AC69eB';
+const feeRecipientAddress = '0xf0E8d52b52008c6f012E24D47db2472d6a3fA356';
 
 function buildAppData(slippage: string) {
 	// Convert slippage to basis points
@@ -79,26 +79,26 @@ function buildAppData(slippage: string) {
 
 const waitForOrder =
 	({ uid, trader, chain }) =>
-	(onSuccess) => {
-		const unwatch = watchContractEvent(config, {
-			address: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
-			abi: ABI.settlement,
-			eventName: 'Trade',
-			args: { owner: trader },
-			chainId: chainsMap[chain],
-			onLogs(logs) {
-				const trade = logs.find((log) => log.data.includes(uid.substring(2)));
-				if (trade) {
-					onSuccess();
+		(onSuccess) => {
+			const unwatch = watchContractEvent(config, {
+				address: '0x9008D19f58AAbD9eD0D60971565AA8510560ab41',
+				abi: ABI.settlement,
+				eventName: 'Trade',
+				args: { owner: trader },
+				chainId: chainsMap[chain],
+				onLogs(logs) {
+					const trade = logs.find((log) => log.data.includes(uid.substring(2)));
+					if (trade) {
+						onSuccess();
+						unwatch();
+					}
+				},
+				onError(error) {
+					console.log('Error confirming order status', error);
 					unwatch();
 				}
-			},
-			onError(error) {
-				console.log('Error confirming order status', error);
-				unwatch();
-			}
-		});
-	};
+			});
+		};
 
 // https://docs.cow.fi/tutorials/how-to-submit-orders-via-the-api/2.-query-the-fee-endpoint
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra: ExtraData) {

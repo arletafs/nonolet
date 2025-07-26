@@ -1,7 +1,7 @@
 import { defillamaReferrerAddress } from '../constants';
 import { getTxs } from '../utils/getTxs';
-import {  sendTx } from '../utils/sendTx';
-import {  zeroAddress } from 'viem';
+import { sendTx } from '../utils/sendTx';
+import { zeroAddress } from 'viem';
 
 export const chainToId = {
 	ethereum: 'https://api.0x.org/',
@@ -25,7 +25,7 @@ export function approvalAddress() {
 }
 
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-const feeCollectorAddress = '0x9Ab6164976514F1178E2BB4219DA8700c9D96E9A';
+const feeCollectorAddress = '0xf0E8d52b52008c6f012E24D47db2472d6a3fA356';
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
 	// amount should include decimals
@@ -36,10 +36,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		extra.amountOut && extra.amountOut !== '0' ? `buyAmount=${extra.amountOut}` : `sellAmount=${amount}`;
 
 	const data = await fetch(
-		`${chainToId[chain]}swap/v1/quote?buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippagePercentage=${
-			extra.slippage / 100
-		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false&intentOnFilling=true&takerAddress=${
-			extra.userAddress
+		`${chainToId[chain]}swap/v1/quote?buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&slippagePercentage=${extra.slippage / 100
+		}&affiliateAddress=${defillamaReferrerAddress}&enableSlippageProtection=false&intentOnFilling=true&takerAddress=${extra.userAddress
 		}&skipValidation=true&feeRecipientTradeSurplus=${feeCollectorAddress}`,
 		{
 			headers: {

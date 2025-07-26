@@ -15,7 +15,7 @@ export const name = '0x Gasless';
 export const token = 'ZRX';
 
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-const feeCollectorAddress = '0x9Ab6164976514F1178E2BB4219DA8700c9D96E9A';
+const feeCollectorAddress = '0xf0E8d52b52008c6f012E24D47db2472d6a3fA356';
 
 export const isGasless = true;
 
@@ -38,10 +38,8 @@ export async function getQuote(chain: string, from: string, to: string, amount: 
 		extra.amountOut && extra.amountOut !== '0' ? `buyAmount=${extra.amountOut}` : `sellAmount=${amount}`;
 
 	const data = await fetch(
-		`https://api.0x.org/tx-relay/v1/swap/quote?buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&checkApproval=true&slippagePercentage=${
-			extra.slippage / 100
-		}&affiliateAddress=${defillamaReferrerAddress}&takerAddress=${
-			extra.userAddress
+		`https://api.0x.org/tx-relay/v1/swap/quote?buyToken=${tokenTo}&${amountParam}&sellToken=${tokenFrom}&checkApproval=true&slippagePercentage=${extra.slippage / 100
+		}&affiliateAddress=${defillamaReferrerAddress}&takerAddress=${extra.userAddress
 		}&feeRecipient=${feeCollectorAddress}&feeSellTokenPercentage=0.0015`,
 		{
 			headers: {
@@ -107,18 +105,18 @@ export async function gaslessApprove({ rawQuote, isInfiniteApproval }) {
 			? rawQuote.approval.eip712.message
 			: rawQuote.approval.eip712.primaryType === 'Permit'
 				? {
-						...rawQuote.approval.eip712.message,
-						value: rawQuote.sellAmount
-					}
+					...rawQuote.approval.eip712.message,
+					value: rawQuote.sellAmount
+				}
 				: rawQuote.approval.eip712.primaryType === 'MetaTransaction'
 					? {
-							...rawQuote.approval.eip712.message,
-							functionSignature: encodeFunctionData({
-								abi: tokenApprovalAbi,
-								functionName: 'approve',
-								args: [getAddress(rawQuote.allowanceTarget), rawQuote.sellAmount]
-							})
-						}
+						...rawQuote.approval.eip712.message,
+						functionSignature: encodeFunctionData({
+							abi: tokenApprovalAbi,
+							functionName: 'approve',
+							args: [getAddress(rawQuote.allowanceTarget), rawQuote.sellAmount]
+						})
+					}
 					: null;
 
 		const approvalSignature = await signTypedData(config, {

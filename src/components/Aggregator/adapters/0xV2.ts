@@ -1,4 +1,4 @@
-import { numberToHex, size, zeroAddress, concat} from 'viem';
+import { numberToHex, size, zeroAddress, concat } from 'viem';
 import { sendTx } from '../utils/sendTx';
 import { getTxs } from '../utils/getTxs';
 
@@ -23,7 +23,7 @@ export const chainToId = {
 };
 
 const nativeToken = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
-const feeCollectorAddress = '0x9Ab6164976514F1178E2BB4219DA8700c9D96E9A';
+const feeCollectorAddress = '0xf0E8d52b52008c6f012E24D47db2472d6a3fA356';
 const permit2Address = '0x000000000022d473030f116ddee9f6b43ac78ba3';
 
 export async function getQuote(chain: string, from: string, to: string, amount: string, extra) {
