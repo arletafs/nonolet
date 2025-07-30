@@ -47,14 +47,39 @@ export function useBinancePrice({
                     chartData: []
                 };
             } catch (error) {
-                console.error(`Error in useBinancePrice for ${tokenSymbol}:`, error);
+                const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+                // Log detailed error for debugging
+                console.error(`Error in useBinancePrice for ${tokenSymbol}:`, errorMessage);
+
+                // Don't retry for CORS-related errors as they won't resolve
+                if (errorMessage.includes('CORS restrictions') || errorMessage.includes('Unable to connect to Binance API')) {
+                    console.warn('Binance API unavailable due to CORS restrictions. Consider implementing a server-side proxy.');
+
+                    // Return empty data instead of throwing to allow app to continue
+                    return {
+                        bestMarket: null,
+                        price: null,
+                        chartData: []
+                    };
+                }
+
+                // For other errors, throw to trigger retry logic
                 throw error;
             }
         },
         enabled: enabled && !!tokenSymbol,
         staleTime: 20_000, // 20 seconds
         refetchInterval,
-        retry: 2,
+        retry: (failureCount, error) => {
+            // Don't retry CORS errors
+            const errorMessage = error instanceof Error ? error.message : '';
+            if (errorMessage.includes('CORS restrictions') || errorMessage.includes('Unable to connect to Binance API')) {
+                return false;
+            }
+            // Retry up to 2 times for other errors
+            return failureCount < 2;
+        },
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     });
 

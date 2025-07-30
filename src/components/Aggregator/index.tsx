@@ -1,4 +1,4 @@
-import { useRef, useState, Fragment, useEffect, useMemo } from 'react';
+import { useRef, useState, Fragment, useEffect, useMemo, useCallback } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useSignTypedData, useCapabilities, useSwitchChain, useBytecode } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
@@ -130,8 +130,8 @@ enum STATES {
 const Body = styled.div`
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
-	padding: 40px;
+	gap: 12px;
+	padding: 24px;
 	width: 100%;
 	align-self: flex-start;
 	z-index: 1;
@@ -153,8 +153,8 @@ const Wrapper = styled.div`
 	text-align: center;
 	display: flex;
 	flex-direction: column;
-	grid-row-gap: 36px;
-	margin: 0px auto 40px;
+	grid-row-gap: 20px;
+	margin: 0px auto 24px;
 	position: absolute;
 	align-items: center;
 	top: 43%;
@@ -212,12 +212,12 @@ const Routes = styled.div<{ visible: boolean }>`
 const BodyWrapper = styled.div`
 	display: flex;
 	justify-content: center;
-	gap: 16px;
+	gap: 12px;
 	width: 80%;
 	z-index: 1;
 	border-radius: 16px;
 	position: relative;
-	margin-bottom: 200px;
+	margin-bottom: 120px;
 
 	& > * {
 		margin: 0 auto;
@@ -227,7 +227,7 @@ const BodyWrapper = styled.div`
 		flex-direction: column;
 		align-items: flex-start;
 		justify-content: center;
-		gap: 24px;
+		gap: 16px;
 
 		& > * {
 			flex: 1;
@@ -239,7 +239,7 @@ const BodyWrapper = styled.div`
 const FormHeader = styled.div`
 	font-weight: bold;
 	font-size: 16px;
-	margin-bottom: 16px;
+	margin-bottom: 8px;
 	.chakra-switch,
 	.chakra-switch__track,
 	.chakra-switch__thumb {
@@ -248,7 +248,7 @@ const FormHeader = styled.div`
 
 	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
 		margin: 0 auto;
-		margin-bottom: 6px;
+		margin-bottom: 4px;
 	}
 `;
 
@@ -267,7 +267,7 @@ const SwapWrapper = styled.div`
 `;
 
 const SwapUnderRoute = styled(SwapWrapper)`
-	margin-top: 16px;
+	margin-top: 8px;
 	min-height: initial;
 	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
 		display: none;
@@ -373,7 +373,11 @@ interface IFinalRoute extends IRoute {
 
 const chains = getAllChains();
 
-export function AggregatorContainer() {
+interface AggregatorContainerProps {
+	onProvideSettingsHandler?: (handler: () => void) => void;
+}
+
+export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorContainerProps = {}) {
 	// wallet stuff
 	const { address, isConnected, chain: chainOnWallet } = useAccount();
 	const { openConnectModal } = useConnectModal();
@@ -502,7 +506,8 @@ export function AggregatorContainer() {
 		logoURI: '',
 		chainId: selectedChain?.id || 1,
 		label: toTokenAddress,
-		value: toTokenAddress
+		value: toTokenAddress,
+		geckoId: null
 	} : {
 		// Default fallback token when neither finalSelectedToToken nor fiat currency is available
 		address: '',
@@ -512,7 +517,8 @@ export function AggregatorContainer() {
 		logoURI: '',
 		chainId: selectedChain?.id || 1,
 		label: 'Unknown',
-		value: ''
+		value: '',
+		geckoId: null
 	});
 
 	const {
@@ -740,10 +746,37 @@ export function AggregatorContainer() {
 		}
 	}, [selectedRoute?.amount, aggregator]);
 
+	// Auto-select best aggregator when routes become available
+	useEffect(() => {
+		if (normalizedRoutes && normalizedRoutes.length > 0 && !aggregator) {
+			// Auto-select the best route (first in sorted array)
+			setAggregator(normalizedRoutes[0].name);
+		}
+	}, [normalizedRoutes, aggregator]);
+
 	// Reset stablecoin override when context changes
 	useEffect(() => {
 		setSelectedStablecoinOverride(null);
 	}, [finalSelectedFromToken?.address, toTokenAddress, selectedChain?.id]);
+
+	// Settings modal toggle function
+	const handleSettingsToggle = useCallback(() => {
+		setSettingsModalOpen((open) => !open);
+	}, []);
+
+	// Provide settings handler to parent component immediately
+	useEffect(() => {
+		if (onProvideSettingsHandler) {
+			onProvideSettingsHandler(handleSettingsToggle);
+		}
+	}, []); // Remove dependencies to run only once on mount
+
+	// Also provide immediately when onProvideSettingsHandler changes
+	useEffect(() => {
+		if (onProvideSettingsHandler) {
+			onProvideSettingsHandler(handleSettingsToggle);
+		}
+	}, [onProvideSettingsHandler, handleSettingsToggle]);
 
 	// Helper functions for stablecoin override functionality
 	const getEffectiveRoute = () => {
@@ -758,13 +791,19 @@ export function AggregatorContainer() {
 		if (selectedStablecoinOverride?.address === route.actualToToken?.address) {
 			// Clicking selected row deselects it (return to default)
 			setSelectedStablecoinOverride(null);
+			// Return to global best aggregator
+			if (normalizedRoutes && normalizedRoutes.length > 0) {
+				setAggregator(normalizedRoutes[0].name);
+			}
 		} else {
-			// Select new stablecoin
+			// Select new stablecoin and its best aggregator
 			setSelectedStablecoinOverride({
 				address: route.actualToToken?.address || '',
 				symbol: route.actualToToken?.symbol || '',
 				route: route
 			});
+			// Switch to the best aggregator for this specific stablecoin
+			setAggregator(route.name);
 		}
 	};
 
@@ -772,9 +811,55 @@ export function AggregatorContainer() {
 		const isSelected = selectedStablecoinOverride?.address === route.actualToToken?.address;
 		const isDefault = index === 0 && !selectedStablecoinOverride;
 
-		if (isSelected) return '#3b82f6'; // Blue for manually selected
-		if (isDefault) return '#f0f9ff'; // Light blue for default
+		if (isSelected) return 'rgba(59, 130, 246, 0.08)'; // Subtle blue for manually selected
+		if (isDefault) return 'rgba(59, 130, 246, 0.04)'; // Very subtle blue for default
 		return 'transparent'; // Default background
+	};
+
+	// Get liquid glass styling for selected rows
+	const getRowStyling = (route: IFinalRoute, index: number) => {
+		const isSelected = selectedStablecoinOverride?.address === route.actualToToken?.address;
+		const isDefault = index === 0 && !selectedStablecoinOverride;
+
+		const baseStyle = {
+			backgroundColor: getRowBackgroundColor(route, index),
+			cursor: 'pointer',
+			transition: 'all 0.3s ease'
+		};
+
+		if (isSelected) {
+			return {
+				...baseStyle,
+				borderLeft: '2px solid rgba(59, 130, 246, 0.3)',
+				boxShadow: 'inset 0 1px 0 0 rgba(255, 255, 255, 0.1)',
+				backdropFilter: 'blur(1px)'
+			};
+		}
+
+		if (isDefault) {
+			return {
+				...baseStyle,
+				borderLeft: '2px solid rgba(59, 130, 246, 0.1)',
+				boxShadow: 'inset 0 1px 0 0 rgba(255, 255, 255, 0.05)'
+			};
+		}
+
+		return {
+			...baseStyle,
+			borderLeft: '2px solid transparent'
+		};
+	};
+
+	// Generate dynamic button text for swap
+	const getSwapButtonText = () => {
+		if (!selectedRoute) {
+			return 'Select Aggregator';
+		}
+
+		const effectiveToToken = getEffectiveActualToToken();
+		const stablecoinName = effectiveToToken?.symbol || finalSelectedToToken?.symbol || 'Token';
+
+		return `Swap ${stablecoinName} via ${selectedRoute.name}`;
 	};
 
 	// Calculate price impact relative to selected stablecoin (or best route if no selection)
@@ -1207,13 +1292,16 @@ export function AggregatorContainer() {
 	});
 
 	const handleSwap = () => {
+		// Use effectiveToToken for fiat currency routes when finalSelectedToToken is null
+		const targetToToken = finalSelectedToToken || effectiveToToken;
+
 		if (
 			selectedRoute &&
 			selectedRoute.price &&
 			!slippageIsWorng &&
 			selectedChain &&
 			finalSelectedFromToken &&
-			finalSelectedToToken &&
+			targetToToken &&
 			address
 		) {
 			if (hasMaxPriceImpact && !isDegenModeEnabled) {
@@ -1245,12 +1333,12 @@ export function AggregatorContainer() {
 			swapMutation.mutate({
 				chain: selectedChain.value,
 				from: finalSelectedFromToken.value,
-				to: finalSelectedToToken.value,
+				to: targetToToken.value,
 				fromAddress: address,
 				slippage,
 				adapter: selectedRoute.name,
 				rawQuote: selectedRoute.price.rawQuote,
-				tokens: { fromToken: finalSelectedFromToken, toToken: finalSelectedToToken },
+				tokens: { fromToken: finalSelectedFromToken, toToken: targetToToken },
 				index: selectedRoute.index,
 				route: selectedRoute,
 				amount: selectedRoute.amount,
@@ -1340,12 +1428,10 @@ export function AggregatorContainer() {
 						<div>
 							<FormHeader>
 								<Flex width="100%" justifyContent="flex-end">
-									<SettingsIcon onClick={() => setSettingsModalOpen((open) => !open)} ml={4} mt={1} cursor="pointer" />
 									{isSmallScreen && finalSelectedFromToken && finalSelectedToToken ? (
 										<ArrowForwardIcon
 											width={'24px'}
 											height={'24px'}
-											ml="16px"
 											cursor={'pointer'}
 											onClick={() => setUiState(STATES.ROUTES)}
 										/>
@@ -1356,7 +1442,7 @@ export function AggregatorContainer() {
 							<ReactSelect options={chains} value={selectedChain} onChange={onChainChange} />
 						</div>
 
-						<Flex flexDir="row" gap="40px" pos="relative">
+						<Flex flexDir="row" gap="24px" pos="relative">
 							<InputAmountAndTokenSelect
 								placeholder={normalizedRoutes[0]?.amountIn}
 								setAmount={setAmount}
@@ -1449,7 +1535,7 @@ export function AggregatorContainer() {
 								</GradientButton>
 							) : !selectedRoute && isSmallScreen && finalSelectedFromToken && finalSelectedToToken ? (
 								<GradientButton onClick={() => setUiState(STATES.ROUTES)}>
-									Select Aggregator
+									{getSwapButtonText()}
 								</GradientButton>
 							) : hasMaxPriceImpact && !isDegenModeEnabled ? (
 								<GradientButton aria-disabled>
@@ -1567,7 +1653,7 @@ export function AggregatorContainer() {
 														{!selectedRoute
 															? 'Select Aggregator'
 															: isApproved
-																? `Swap via ${selectedRoute?.name}`
+																? getSwapButtonText()
 																: slippageIsWorng
 																	? 'Set Slippage'
 																	: 'Approve'}
@@ -1819,11 +1905,7 @@ export function AggregatorContainer() {
 												key={`${selectedChain!.value}-${finalSelectedFromToken!.address}-${r.actualToToken?.address || r.name}-${r.name}`}
 											>
 												<tr
-													style={{
-														backgroundColor: getRowBackgroundColor(r, i),
-														cursor: 'pointer',
-														transition: 'background-color 0.2s ease'
-													}}
+													style={getRowStyling(r, i)}
 													onClick={() => handleStablecoinRowClick(r)}
 												>
 													<td>

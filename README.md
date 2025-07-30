@@ -28,6 +28,52 @@ yarn dev
 
 Visit: **http://localhost:3000/**
 
+## 🏥 Monitoring & Health Checks
+
+Nonolet includes built-in health monitoring for production deployments:
+
+### Health Endpoint
+
+**GET** `/api/binance/health` - Comprehensive service health status
+
+```json
+{
+  "status": "healthy",           // healthy | degraded | unhealthy
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "uptime": 3600,               // seconds since startup
+  "memory": {
+    "used": 45,                 // MB used
+    "total": 128,               // MB total heap
+    "percentage": 35.16         // % memory utilization
+  },
+  "rateLimiting": {
+    "activeIPs": 23,            // currently tracked IPs
+    "totalRequests": 1543,      // total requests served
+    "blockedRequests": 12,      // requests blocked by rate limiting
+    "blockRate": 0.78           // percentage of requests blocked
+  },
+  "binanceApi": {
+    "status": "online",         // online | offline
+    "latency": 145              // ms response time
+  }
+}
+```
+
+### Health Status Codes
+
+- **200** - `healthy` or `degraded` (service operational)
+- **503** - `unhealthy` (service unavailable)
+
+### Monitoring Integration
+
+The health endpoint is perfect for:
+- **Load Balancer Health Checks**: Configure your LB to check `/api/binance/health`
+- **Uptime Monitoring**: Services like UptimeRobot, Pingdom, or DataDog
+- **Custom Dashboards**: Parse JSON response for Grafana/Prometheus metrics
+- **CI/CD Pipeline Checks**: Verify deployment health before traffic routing
+
+The health endpoint gives you all the monitoring you need to ensure everything is running smoothly.
+
 ## 📚 Documentation
 
 For comprehensive setup instructions, troubleshooting, and development guide, see **[SETUP.md](./SETUP.md)**

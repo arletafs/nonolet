@@ -233,6 +233,7 @@ async function normalizeBinanceSymbol(symbol: string): Promise<string | null> {
 
 /**
  * Make request to Binance public API (no authentication needed)
+ * Note: Direct browser requests to Binance API may fail due to CORS restrictions
  */
 async function binanceRequest<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
     const baseUrl = 'https://api.binance.com/api/v3';
@@ -240,13 +241,40 @@ async function binanceRequest<T>(endpoint: string, params: Record<string, string
     const queryString = new URLSearchParams(params).toString();
     const url = `${baseUrl}${endpoint}${queryString ? `?${queryString}` : ''}`;
 
-    const response = await fetch(url);
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            // Add timeout to prevent hanging requests
+            signal: AbortSignal.timeout(10000) // 10 second timeout
+        });
 
-    if (!response.ok) {
-        throw new Error(`Binance API error: ${response.status} ${response.statusText}`);
+        if (!response.ok) {
+            const errorText = await response.text().catch(() => 'Unknown error');
+            throw new Error(`Binance API error: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+
+        return response.json();
+    } catch (error) {
+        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+            // This is likely a CORS or network connectivity issue
+            throw new Error(
+                'Unable to connect to Binance API. This may be due to CORS restrictions or network issues. ' +
+                'Consider using a server-side proxy or falling back to alternative price sources.'
+            );
+        }
+
+        if (error instanceof Error && error.name === 'AbortError') {
+            throw new Error('Binance API request timed out. Please try again.');
+        }
+
+        // Re-throw the original error with additional context
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        throw new Error(`Binance API request failed: ${errorMessage}`);
     }
-
-    return response.json();
 }
 
 /**
@@ -339,6 +367,7 @@ export async function getBinanceKlines(
 
 /**
  * Get comprehensive price data for a token against USD stablecoins
+ * Falls back to server-side proxy if direct API calls fail due to CORS
  */
 export async function getBinanceTokenPrice(
     tokenSymbol: string,
@@ -350,7 +379,7 @@ export async function getBinanceTokenPrice(
     chartData: BinanceChartData[];
 } | null> {
     try {
-        // Find the best USD market by volume
+        // Try direct API calls first
         const bestMarket = await findBestUSDMarket(tokenSymbol);
         if (!bestMarket) {
             return null;
@@ -368,6 +397,28 @@ export async function getBinanceTokenPrice(
             chartData
         };
     } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+        // If CORS error, try the server-side proxy
+        if (errorMessage.includes('CORS restrictions') || errorMessage.includes('Unable to connect to Binance API')) {
+            console.log(`CORS error detected, falling back to server-side proxy for ${tokenSymbol}`);
+
+            try {
+                const response = await fetch(`/api/binance/price?symbol=${encodeURIComponent(tokenSymbol)}&interval=${interval}&limit=${limit}`);
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: 'Unknown server error' }));
+                    throw new Error(`Server proxy error: ${errorData.error || response.statusText}`);
+                }
+
+                const data = await response.json();
+                return data;
+            } catch (proxyError) {
+                console.error(`Server proxy also failed for ${tokenSymbol}:`, proxyError);
+                return null;
+            }
+        }
+
         console.error(`Error fetching Binance token price for ${tokenSymbol}:`, error);
         return null;
     }

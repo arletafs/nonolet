@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import ThemeProvider, { GlobalStyle } from '~/Theme';
 import { Phishing } from './Phishing';
 import ConnectButton from '~/components/Aggregator/ConnectButton';
-import Header from '~/components/Aggregator/Header';
+import { SettingsIcon } from '@chakra-ui/icons';
 
 const PageWrapper = styled.div`
 	flex: 1;
@@ -27,7 +27,7 @@ const Center = styled.main`
 	flex: 1;
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
+	gap: 4px;
 	width: 100%;
 	min-height: 100%;
 	margin: 0 auto;
@@ -36,7 +36,7 @@ const Center = styled.main`
 	overflow-x: hidden;
 
 	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
-		gap: 28px;
+		gap: 8px;
 	}
 `;
 
@@ -57,8 +57,25 @@ const Hero = styled.div`
 	min-height: 300px;
 
 	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
-		height: 60vh;
+		height: 80vh;
 		border-radius: 30px;
+		padding-top: 80px;
+	}
+`;
+
+const WalletButtonContainer = styled.div`
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+
+	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
+		top: 30px;
+		right: 30px;
+		gap: 16px;
 	}
 `;
 
@@ -118,9 +135,10 @@ interface ILayoutProps {
 	defaultSEO?: boolean;
 	backgroundColor?: string;
 	style?: React.CSSProperties;
+	onSettingsClick?: () => void;
 }
 
-export default function Layout({ title, children, ...props }: ILayoutProps) {
+export default function Layout({ title, children, onSettingsClick, ...props }: ILayoutProps) {
 	return (
 		<>
 			<Head>
@@ -131,10 +149,17 @@ export default function Layout({ title, children, ...props }: ILayoutProps) {
 				<GlobalStyle />
 				<PageWrapper>
 					<Center {...props}>
-						<Header>
-							<ConnectButton {...(props as any)} />
-						</Header>
 						<Hero>
+							<WalletButtonContainer>
+								<ConnectButton {...(props as any)} />
+								<SettingsIcon
+									onClick={onSettingsClick}
+									cursor="pointer"
+									color="white"
+									boxSize={4}
+									_hover={{ color: 'gray.200' }}
+								/>
+							</WalletButtonContainer>
 							<MirrorText>All aggregators. All stablecoins. All at once.</MirrorText>
 							{/* <p style={{ fontSize: '32px', color: 'white', marginBottom: '10px', fontFamily: 'Urbanist', fontWeight: 'bold' }}>All aggregators. All stablecoins. All at once.</p> */}
 							{/* <p style={{ fontSize: '20px', color: 'white', fontFamily: 'Urbanist' }}>All aggregators. All stablecoins. All at once.</p> */}
