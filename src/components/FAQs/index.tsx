@@ -11,6 +11,7 @@ const FAQComponentWrapper = styled.div`
     border-radius: 12px;
 	color: #3B3B3B;
 	font-family: 'Urbanist', sans-serif;
+	margin-top: 40px;
     `;
 
 export default function FaqWrapper() {

@@ -3,20 +3,18 @@ import { useMutation } from '@tanstack/react-query';
 import { useAccount, useSignTypedData, useCapabilities, useSwitchChain, useBytecode } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
 import BigNumber from 'bignumber.js';
-import { ArrowRight, ArrowLeft } from 'react-feather';
+import { ArrowRight } from 'react-feather';
 import styled from 'styled-components';
 import {
 	useToast,
 	Button,
 	Flex,
 	Box,
-	IconButton,
 	Text,
 	ToastId,
 	Alert,
 	AlertIcon,
-	useBreakpoint,
-	Image
+	useBreakpoint
 } from '@chakra-ui/react';
 import ReactSelect from '~/components/MultiSelect';
 import FAQs from '~/components/FAQs';
@@ -55,7 +53,7 @@ import { PriceImpact } from '../PriceImpact';
 import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
-import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon, SettingsIcon } from '@chakra-ui/icons';
+import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon } from '@chakra-ui/icons';
 import { Settings } from './Settings';
 import { formatAmount } from '~/utils/formatAmount';
 import { RefreshIcon } from '../RefreshIcon';
@@ -68,8 +66,7 @@ import ConversionChart from '../ConversionChart';
 import FundingOptions from '../FundingOptions';
 import { useBinancePrice } from '~/queries/useBinancePrice';
 
-import iconLlamaswap from '~/public/llamaswap.png';
-import iconDisclaimer from '~/public/disclaimer.svg';
+
 import Footer from '../Footer';
 
 /*
@@ -139,7 +136,7 @@ const Body = styled.div`
 	position: relative;
 	border-radius: 30px;
 	text-align: left;
-	border-bottom: 15px solid #00203A;
+	border-bottom: 15px solid #B0D2FA;
 
 	/* @media screen and (min-width: ${({ theme }) => theme.bpLg}) {
 		position: sticky;
@@ -157,7 +154,7 @@ const Wrapper = styled.div`
 	margin: 0px auto 24px;
 	position: absolute;
 	align-items: center;
-	top: 43%;
+	top: 32%;
 	left: 50%;
 	transform: translateX(-50%);
 
@@ -219,20 +216,12 @@ const BodyWrapper = styled.div`
 	position: relative;
 	margin-bottom: 120px;
 
-	& > * {
-		margin: 0 auto;
-	}
-
 	@media screen and (min-width: ${({ theme }) => theme.bpLg}) {
 		flex-direction: column;
 		align-items: flex-start;
 		justify-content: center;
 		gap: 16px;
 
-		& > * {
-			flex: 1;
-			margin: 0;
-		}
 	}
 `;
 
@@ -290,18 +279,7 @@ const ConnectButtonWrapper = styled.div`
 	}
 `;
 
-const Disclaimer = styled.div`
-	position: relative;
-	flex-direction: row;
-	align-items: center;
-	justify-content: flex-end;
-	width: 100%;
-	background-color: #E4EAF3;
-	border-radius: 20px;
-	display: flex;
-	gap: 16px;
-	padding: 30px;
-`;
+
 
 const Table = styled.table`
 	table-layout: fixed;
@@ -321,22 +299,24 @@ const Table = styled.table`
 	caption {
 		border-bottom: none;
 	}
+
+	tbody tr:hover {
+		background-color: rgba(59, 130, 246, 0.05) !important;
+		border-left: 2px solid rgba(59, 130, 246, 0.2) !important;
+		box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08) !important;
+		backdrop-filter: blur(2px) !important;
+	}
 `;
 
 export const SwapInputArrow = (props) => (
-	<IconButton
-		icon={
-			<Box display="flex" flexDirection="column" alignItems="center" gap={0}>
-				<ArrowRight size={18} />
-				<ArrowLeft size={18} />
-			</Box>
-		}
-		aria-label="Switch Tokens"
+	<Box
+		display="flex"
+		alignItems="center"
+		justifyContent="center"
 		w="5rem"
 		h="5rem"
 		borderRadius="50%"
 		bg="#00203A"
-		_hover={{ transform: 'translate(-50%, -50%) scale(1.05)', transition: 'all 0.2s ease-in-out' }}
 		color="white"
 		zIndex={1}
 		position="absolute"
@@ -345,7 +325,9 @@ export const SwapInputArrow = (props) => (
 		transform="translate(-50%, -50%)"
 		boxShadow="0px 0px 10px 0px rgba(0, 0, 0, 0.1)"
 		{...props}
-	/>
+	>
+		<ArrowRight size={24} />
+	</Box>
 );
 
 const StablecoinSettlementWrapper = styled.div`
@@ -387,13 +369,13 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 
 	// swap input fields and selected aggregator states
 	const [aggregator, setAggregator] = useState<string | null>(null);
-	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
+	const [isPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
 	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['1', '']);
 
 	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.3');
 	const [lastOutputValue, setLastOutputValue] = useState<{ aggregator: string; amount: number } | null>(null);
 	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
-	const [isDegenModeEnabled, _] = useLocalStorage('llamaswap-degenmode', false);
+	const [isDegenModeEnabled] = useLocalStorage('llamaswap-degenmode', false);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
 
 	// Stablecoin override state for settlement table selection
@@ -425,8 +407,8 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 
 	const { toTokenAddress } = useQueryParams();
 	const {
-		fetchingFromToken,
-		fetchingToToken,
+		fetchingFromToken: _fetchingFromToken,
+		fetchingToToken: _fetchingToToken,
 		finalSelectedFromToken,
 		finalSelectedToToken,
 		selectedChain,
@@ -465,7 +447,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 					'ethereum': 1, 'bsc': 56, 'polygon': 137, 'optimism': 10, 'arbitrum': 42161, 'avax': 43114,
 					'gnosis': 100, 'fantom': 250, 'klaytn': 8217, 'aurora': 1313161554, 'celo': 42220
 				}[selectedChain.value];
-				const stablecoins = fiatCurrencyMappings[toTokenAddress]?.[chainId];
+				const stablecoins = chainId ? fiatCurrencyMappings[toTokenAddress]?.[chainId] : undefined;
 				return stablecoins?.[0]; // Use first stablecoin as representative
 			}
 			return undefined;
@@ -526,7 +508,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 		isLoading,
 		refetch,
 		lastFetched,
-		loadingRoutes,
+		loadingRoutes: _loadingRoutes,
 		isFiatCurrency
 	} = useGetRoutesWithFiatSupport({
 		chain: selectedChain?.value,
@@ -805,6 +787,17 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 			// Switch to the best aggregator for this specific stablecoin
 			setAggregator(route.name);
 		}
+
+		// Scroll back up to the hero section
+		setTimeout(() => {
+			const heroElement = document.getElementById('hero-section');
+			if (heroElement) {
+				heroElement.scrollIntoView({
+					behavior: 'smooth',
+					block: 'start'
+				});
+			}
+		}, 100); // Small delay to ensure state updates are processed
 	};
 
 	const getRowBackgroundColor = (route: IFinalRoute, index: number) => {
@@ -859,7 +852,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 		const effectiveToToken = getEffectiveActualToToken();
 		const stablecoinName = effectiveToToken?.symbol || finalSelectedToToken?.symbol || 'Token';
 
-		return `Swap ${stablecoinName} via ${selectedRoute.name}`;
+		return `Swap to ${stablecoinName} via ${selectedRoute.name}`;
 	};
 
 	// Calculate price impact relative to selected stablecoin (or best route if no selection)
@@ -1454,18 +1447,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 								tokenPrice={fromTokenPrice}
 							/>
 
-							<SwapInputArrow
-								onClick={() =>
-									router.push(
-										{
-											pathname: router.pathname,
-											query: { ...router.query, to: finalSelectedFromToken?.address, from: finalSelectedToToken?.address }
-										},
-										undefined,
-										{ shallow: true }
-									)
-								}
-							/>
+							<SwapInputArrow />
 
 							<InputAmountAndTokenSelect
 								placeholder={getEffectiveRoute()?.amount}
@@ -1496,7 +1478,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 							{warnings}
 						</Box>
 
-						<SwapWrapper>
+						<SwapWrapper id="main-input-component">
 							<>
 								{failedRoutes.length > 0 ? (
 									<Alert status="warning" borderRadius="0.375rem" py="8px" mt="-14px" mb="16px">
@@ -1596,7 +1578,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 														isMaxPriceImpact={hasMaxPriceImpact}
 													/>
 												) : (
-													<Button
+													<GradientButton
 														isLoading={
 															swapMutation.isPending ||
 															isApproveLoading ||
@@ -1610,7 +1592,11 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 																? 'Confirming'
 																: 'Preparing transaction'
 														}
-														colorScheme={'messenger'}
+														variant="primary"
+														fontSize="lg"
+														fontWeight="600"
+														minH="56px"
+														width="100%"
 														onClick={() => {
 															if (!isApproved && isGaslessApproval) {
 																handleGaslessApproval({ isInfiniteApproval: false });
@@ -1657,7 +1643,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 																: slippageIsWorng
 																	? 'Set Slippage'
 																	: 'Approve'}
-													</Button>
+													</GradientButton>
 												)}
 
 												{!isApproved && selectedRoute && inifiniteApprovalAllowed.includes(selectedRoute.name) && (
@@ -1816,7 +1802,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 												</Tooltip>
 												<div style={{ fontSize: '10px', fontWeight: 'normal', textAlign: 'left' }}>
 													<a href="https://dune.com/queries/5509168" target="_blank" rel="noopener noreferrer" style={{ color: '#60A5FA', textDecoration: 'none' }}>
-														by Dune
+														via Dune
 													</a>
 												</div>
 											</div>
@@ -1838,7 +1824,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 												</Tooltip>
 												<div style={{ fontSize: '10px', fontWeight: 'normal', textAlign: 'left' }}>
 													<a href="https://dune.com/queries/5512114" target="_blank" rel="noopener noreferrer" style={{ color: '#60A5FA', textDecoration: 'none' }}>
-														by Dune
+														via Dune
 													</a>
 												</div>
 											</div>

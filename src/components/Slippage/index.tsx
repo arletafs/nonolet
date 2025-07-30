@@ -1,5 +1,5 @@
 import { WarningIcon } from '@chakra-ui/icons';
-import { Button, Box, Text, Alert, AlertIcon, Popover, PopoverTrigger, PopoverContent } from '@chakra-ui/react';
+import { Button, Box, Alert, AlertIcon, Popover, PopoverTrigger, PopoverContent } from '@chakra-ui/react';
 import * as React from 'react';
 
 const stablecoins = [

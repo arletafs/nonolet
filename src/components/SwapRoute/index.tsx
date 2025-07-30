@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import Tooltip from '~/components/Tooltip';
 import { useTokenApprove } from '../Aggregator/hooks';
 import { Flex, Skeleton, Text, Image } from '@chakra-ui/react';
-import { AlertCircle, Gift, Table, Unlock, ZapOff } from 'react-feather';
+import { AlertCircle, Gift, Unlock, ZapOff } from 'react-feather';
 import { GasIcon } from '../Icons';
 import { formattedNum } from '~/utils';
 
@@ -195,7 +195,7 @@ const Route = ({
 				<Text>
 					Amount: {formattedNum(amount)}
 				</Text>*/}
-				
+
 			</RouteRow>
 		</RouteWrapper>
 	);

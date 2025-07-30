@@ -6,7 +6,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { uniqueId } from 'lodash';
 import {
 	Text,
-	Image,
 	Flex,
 	Spinner,
 	Alert,
@@ -43,7 +42,7 @@ export default function ConversionChart({ fromToken, toToken, chain }: Conversio
 		chartData: binanceChartData,
 		isLoading: binanceLoading,
 		error: binanceError,
-		bestMarket
+		bestMarket: _bestMarket
 	} = useBinancePrice({
 		tokenSymbol,
 		enabled: !!tokenSymbol,

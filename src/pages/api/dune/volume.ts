@@ -43,11 +43,11 @@ export default async function handler(
         // Get API key from environment
         const apiKey = process.env.DUNE_API_KEY;
         if (!apiKey) {
-            console.error('❌ DUNE_API_KEY not found in environment variables');
-            res.status(500).json({
+            console.warn('⚠️ DUNE_API_KEY not found in environment variables - returning empty data');
+            res.status(200).json({
                 volumes: {},
                 availableSymbols: [],
-                error: 'Dune API key not configured'
+                error: 'Dune API key not configured - feature disabled'
             });
             return;
         }

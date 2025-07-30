@@ -149,7 +149,7 @@ export default function Layout({ title, children, onSettingsClick, ...props }: I
 				<GlobalStyle />
 				<PageWrapper>
 					<Center {...props}>
-						<Hero>
+						<Hero id="hero-section">
 							<WalletButtonContainer>
 								<ConnectButton {...(props as any)} />
 								<SettingsIcon

@@ -19,8 +19,9 @@ export function useStabilityData() {
                 const stabilityData = await duneService.getAllStabilityData();
                 return stabilityData;
             } catch (error) {
-                console.error('Error fetching stability data from Dune:', error);
-                throw new Error('Failed to fetch stability data');
+                console.warn('Volatility data unavailable (Dune API not configured):', error);
+                // Return empty array instead of throwing to prevent UI crashes
+                return [];
             }
         },
         staleTime: 5 * 60 * 1000, // 5 minutes

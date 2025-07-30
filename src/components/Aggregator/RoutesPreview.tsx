@@ -1,5 +1,4 @@
-import { Box, Flex, Heading, Link, Text } from '@chakra-ui/react';
-import styled from 'styled-components';
+import { Flex } from '@chakra-ui/react';
 
 const RoutesPreview = () => {
 	return (

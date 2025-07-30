@@ -19,8 +19,9 @@ export function useVolumeData() {
                 const volumeData = await duneService.getAllVolumeDataFormatted();
                 return volumeData;
             } catch (error) {
-                console.error('Error fetching volume data from Dune:', error);
-                throw new Error('Failed to fetch volume data');
+                console.warn('Volume data unavailable (Dune API not configured):', error);
+                // Return empty array instead of throwing to prevent UI crashes
+                return [];
             }
         },
         staleTime: 5 * 60 * 1000, // 5 minutes

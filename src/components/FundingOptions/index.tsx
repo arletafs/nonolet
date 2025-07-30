@@ -7,7 +7,7 @@ import { useAccount } from 'wagmi';
 import { useTokenBalances } from '~/queries/useTokenBalances';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from '../Aggregator/constants';
-import { formattedNum } from '~/utils';
+// import { formattedNum } from '~/utils';
 
 // Stablecoin symbols for identification
 const stablecoins = [
@@ -71,11 +71,7 @@ const FundingHeader = styled.div`
 	margin-bottom: 8px;
 `;
 
-const CurrencyIndicator = styled.div`
-	font-size: 48px;
-	font-weight: bold;
-	color: #3B3B3B;
-`;
+
 
 const Subtitle = styled.p`
 	margin: 0 0 16px 0;
@@ -209,13 +205,7 @@ const findHighestBalanceNonStablecoin = (tokenBalances: any, chainTokenList: any
 	return highestCryptoAsset;
 };
 
-// Helper function to format balance with 3 decimal places
-const formatBalance = (amount: string | number, decimals: number = 18) => {
-	if (!amount) return '0.000';
-	const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-	const formatted = numericAmount / Math.pow(10, decimals);
-	return formatted.toFixed(3);
-};
+
 
 // Helper function to format USD balance with dollar sign and space-separated thousands
 const formatUSDBalance = (balanceUSD: number) => {
@@ -232,15 +222,7 @@ const formatUSDBalance = (balanceUSD: number) => {
 	return `$${formattedInteger}.${decimalPart}`;
 };
 
-// Helper function to calculate price impact
-const calculatePriceImpact = (selectedRoute: any, normalizedRoutes: any[] | undefined) => {
-	if (!selectedRoute || !normalizedRoutes || normalizedRoutes.length === 0) return null;
 
-	const bestRoute = normalizedRoutes[0];
-	if (!bestRoute || !bestRoute.netOut || !selectedRoute.netOut) return null;
-
-	return ((selectedRoute.netOut / bestRoute.netOut) - 1) * 100;
-};
 
 export default function FundingOptions({ onTokenSelect, selectedRoute, normalizedRoutes }: FundingOptionsProps) {
 	const { address } = useAccount();
@@ -276,7 +258,7 @@ export default function FundingOptions({ onTokenSelect, selectedRoute, normalize
 	return (
 		<FundingWrapper>
 			<FundingHeader>
-				<Text fontSize="48px" fontWeight="bold" mt="40px">FUNDING OPTIONS</Text>
+				<Text fontSize="48px" fontWeight="bold" mt="100px">FUNDING OPTIONS</Text>
 			</FundingHeader>
 
 			<Subtitle>Best quote from selected asset</Subtitle>
