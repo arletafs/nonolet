@@ -24,7 +24,7 @@
 		"@emotion/styled": "^11",
 		"@rainbow-me/rainbowkit": "2.1.6",
 		"@tanstack/react-query": "5.55.4",
-		"@tanstack/react-virtual": "^3.0.0-beta.36",
+		"@tanstack/react-virtual": "^3.13.12",
 		"ariakit": "^2.0.0-next.41",
 		"bignumber.js": "^9.0.2",
 		"echarts": "^5.4.1",

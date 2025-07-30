@@ -34,7 +34,8 @@ const nextConfig = {
 			}
 		];
 	},
-	experimental: {}
+	experimental: {},
+	transpilePackages: ['echarts']
 };
 
 module.exports = withBundleAnalyzer(nextConfig);
