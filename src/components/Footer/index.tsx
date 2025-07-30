@@ -2,9 +2,7 @@ import {
 	Image,
 	Link,
 	Button,
-	Input,
 	Textarea,
-	Text,
 	useToast,
 	Modal,
 	ModalOverlay,
@@ -50,25 +48,9 @@ const FormField = styled.div`
 	gap: 8px;
 `;
 
-const FormLabel = styled.label`
-	font-size: 14px;
-	font-weight: 600;
-	color: #2D3748;
-	margin-bottom: 4px;
-`;
 
-const StyledInput = styled(Input)`
-	background: rgba(255, 255, 255, 0.9) !important;
-	border: 1px solid rgba(0, 32, 58, 0.2) !important;
-	color: #2D3748 !important;
-	border-radius: 8px !important;
-	font-family: 'Urbanist', sans-serif;
-	
-	&:focus {
-		border-color: rgba(59, 130, 246, 0.5) !important;
-		box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2) !important;
-	}
-`;
+
+
 
 const StyledTextarea = styled(Textarea)`
 	background: rgba(255, 255, 255, 0.9) !important;
@@ -118,7 +100,6 @@ export default function Footer() {
 		// Capture form reference before async operation
 		const form = e.currentTarget;
 		const formData = new FormData(form);
-		const message = formData.get('message') as string;
 
 		try {
 			const response = await fetch('https://formspree.io/f/mpwllpzl', {
@@ -218,7 +199,7 @@ export default function Footer() {
 					<ModalBody pb={6}>
 						<FeedbackForm onSubmit={handleSubmit}>
 							<FormField>
-								<FormLabel htmlFor="message">Your message:</FormLabel>
+								<label htmlFor="message" style={{ fontSize: '14px', fontWeight: '600', color: '#2D3748', marginBottom: '4px' }}>Your message:</label>
 								<StyledTextarea
 									id="message"
 									name="message"

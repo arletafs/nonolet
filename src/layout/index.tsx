@@ -2,7 +2,6 @@ import * as React from 'react';
 import Head from 'next/head';
 import styled from 'styled-components';
 import ThemeProvider, { GlobalStyle } from '~/Theme';
-import { Phishing } from './Phishing';
 import ConnectButton from '~/components/Aggregator/ConnectButton';
 import { SettingsIcon } from '@chakra-ui/icons';
 

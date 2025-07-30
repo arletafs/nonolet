@@ -27,7 +27,6 @@ const MAX_STORED_IPS = 10000; // Prevent memory exhaustion
 // Metrics for monitoring
 let totalRequests = 0;
 let blockedRequests = 0;
-let lastCleanup = Date.now();
 
 // Periodic cleanup to prevent memory leaks
 setInterval(() => {
@@ -40,8 +39,6 @@ setInterval(() => {
             cleaned++;
         }
     }
-
-    lastCleanup = now;
 
     // Log cleanup metrics for monitoring
     if (cleaned > 0) {

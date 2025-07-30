@@ -1,10 +1,5 @@
 import styled from 'styled-components';
-import Tooltip from '~/components/Tooltip';
-import { useTokenApprove } from '../Aggregator/hooks';
 import { Flex, Skeleton, Text, Image } from '@chakra-ui/react';
-import { AlertCircle, Gift, Unlock, ZapOff } from 'react-feather';
-import { GasIcon } from '../Icons';
-import { formattedNum } from '~/utils';
 
 interface IToken {
 	address: string;
@@ -67,23 +62,7 @@ const Route = ({
 	selectedChain,
 	isGasless
 }: IRoute) => {
-	const { isApproved } = useTokenApprove({
-		token: fromToken?.address as `0x${string}`,
-		spender: price?.tokenApprovalAddress as `0x${string}`,
-		amount: amountFrom,
-		chain: selectedChain
-	});
-
 	if (!price.amountReturned || (Number(gasUsd) === 0 && name !== 'CowSwap' && !isGasless)) return null;
-
-	const amount = +price.amountReturned / 10 ** +toToken?.decimals;
-
-	const afterFees =
-		toTokenPrice && Number.isFinite(Number(toTokenPrice)) && netOut && Number.isFinite(Number(netOut))
-			? `$${formattedNum(netOut.toFixed(1), false, true)}`
-			: null;
-	const isGasNotKnown = gasUsd === 'Unknown' || Number.isNaN(Number(gasUsd));
-	const txGas = isGasNotKnown ? '' : '$' + formattedNum(gasUsd);
 
 	const inputAmount = amountOut !== '0' && fromToken?.decimals && amountFrom && amountFrom !== '0' ? amountIn : null;
 	return (

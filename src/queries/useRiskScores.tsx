@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { bluechipService, RiskScoreData } from '~/services/bluechip';
+import { bluechipService } from '~/services/bluechip';
 
 /**
  * Hook to get risk score data for a specific stablecoin by symbol
