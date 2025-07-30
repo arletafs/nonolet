@@ -1,4 +1,4 @@
-import { useRef, useState, Fragment, useEffect } from 'react';
+import { useRef, useState, Fragment, useEffect, useMemo } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAccount, useSignTypedData, useCapabilities, useSwitchChain, useBytecode } from 'wagmi';
 import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit';
@@ -48,6 +48,9 @@ import SwapConfirmation from './SwapConfirmation';
 import { getTokenBalance, useBalance } from '~/queries/useBalance';
 import { useEstimateGas } from './hooks/useEstimateGas';
 import { VolatilityScoreCell } from '~/components/VolatilityScoreCell';
+import { VolumeCell } from '~/components/VolumeCell';
+import { RiskScoreCell } from '~/components/RiskScoreCell';
+import Tooltip from '~/components/Tooltip';
 import { PriceImpact } from '../PriceImpact';
 import { useQueryParams } from '~/hooks/useQueryParams';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
@@ -63,10 +66,10 @@ import { cowSwapEthFlowSlippagePerChain } from './adapters/cowswap';
 import GradientButton from '../GradientButton';
 import ConversionChart from '../ConversionChart';
 import FundingOptions from '../FundingOptions';
+import { useBinancePrice } from '~/queries/useBinancePrice';
 
 import iconLlamaswap from '~/public/llamaswap.png';
 import iconDisclaimer from '~/public/disclaimer.svg';
-import iconStablecoinSettlement from '~/public/icon-settlement.svg';
 import Footer from '../Footer';
 
 /*
@@ -381,13 +384,20 @@ export function AggregatorContainer() {
 	// swap input fields and selected aggregator states
 	const [aggregator, setAggregator] = useState<string | null>(null);
 	const [isPrivacyEnabled, setIsPrivacyEnabled] = useLocalStorage('llamaswap-isprivacyenabled', false);
-	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['', '']);
+	const [[amount, amountOut], setAmount] = useState<[number | string, number | string]>(['1', '']);
 
 	const [slippage, setSlippage] = useLocalStorage('llamaswap-slippage', '0.3');
 	const [lastOutputValue, setLastOutputValue] = useState<{ aggregator: string; amount: number } | null>(null);
 	const [disabledAdapters, setDisabledAdapters] = useLocalStorage('llamaswap-disabledadapters', []);
 	const [isDegenModeEnabled, _] = useLocalStorage('llamaswap-degenmode', false);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
+
+	// Stablecoin override state for settlement table selection
+	const [selectedStablecoinOverride, setSelectedStablecoinOverride] = useState<{
+		address: string;
+		symbol: string;
+		route: IFinalRoute;
+	} | null>(null);
 
 	// mobile states
 	const [uiState, setUiState] = useState(STATES.INPUT);
@@ -421,6 +431,8 @@ export function AggregatorContainer() {
 	} = useSelectedChainAndTokens();
 	const isValidSelectedChain = selectedChain && chainOnWallet ? selectedChain.id === chainOnWallet.id : false;
 	const isOutputTrade = amountOut && amountOut !== '';
+
+
 
 	// format input amount of selected from token
 	const amountWithDecimals = BigNumber(debouncedAmount && debouncedAmount !== '' ? debouncedAmount : '0')
@@ -458,6 +470,28 @@ export function AggregatorContainer() {
 	});
 
 	const { gasTokenPrice, toTokenPrice, fromTokenPrice, gasPriceData } = tokenPrices || {};
+
+	// Fetch chart data to determine visibility
+	const tokenSymbol = finalSelectedFromToken?.symbol;
+	const { price: binancePrice, chartData: binanceChartData } = useBinancePrice({
+		tokenSymbol,
+		enabled: !!tokenSymbol,
+		interval: '1h',
+		limit: 168
+	});
+
+	// Determine if ConversionChart should be shown (hide when no data available)
+	const shouldShowConversionChart = useMemo(() => {
+		// Hide if no token is selected
+		if (!tokenSymbol) return false;
+
+		// Check data availability using same logic as ConversionChart component
+		const hasOracleData = fromTokenPrice;
+		const hasBinanceData = binancePrice && binanceChartData.length > 0;
+
+		// Show chart only if we have both oracle data and binance chart data
+		return hasOracleData && hasBinanceData;
+	}, [tokenSymbol, fromTokenPrice, binancePrice, binanceChartData]);
 
 	// Create a placeholder token object for fiat currencies when finalSelectedToToken is null
 	const effectiveToToken = finalSelectedToToken || (toTokenAddress && fiatCurrencyMappings[toTokenAddress] ? {
@@ -640,7 +674,7 @@ export function AggregatorContainer() {
 	};
 	const onChainChange = (newChain) => {
 		setAggregator(null);
-		setAmount(['10', '']);
+		setAmount(['1', '']);
 
 		// Preserve fiat currency selection when switching chains
 		const currentTo = router.query.to;
@@ -705,6 +739,57 @@ export function AggregatorContainer() {
 			});
 		}
 	}, [selectedRoute?.amount, aggregator]);
+
+	// Reset stablecoin override when context changes
+	useEffect(() => {
+		setSelectedStablecoinOverride(null);
+	}, [finalSelectedFromToken?.address, toTokenAddress, selectedChain?.id]);
+
+	// Helper functions for stablecoin override functionality
+	const getEffectiveRoute = () => {
+		return selectedStablecoinOverride?.route || normalizedRoutes[0];
+	};
+
+	const getEffectiveActualToToken = () => {
+		return selectedStablecoinOverride?.route.actualToToken || normalizedRoutes[0]?.actualToToken;
+	};
+
+	const handleStablecoinRowClick = (route: IFinalRoute) => {
+		if (selectedStablecoinOverride?.address === route.actualToToken?.address) {
+			// Clicking selected row deselects it (return to default)
+			setSelectedStablecoinOverride(null);
+		} else {
+			// Select new stablecoin
+			setSelectedStablecoinOverride({
+				address: route.actualToToken?.address || '',
+				symbol: route.actualToToken?.symbol || '',
+				route: route
+			});
+		}
+	};
+
+	const getRowBackgroundColor = (route: IFinalRoute, index: number) => {
+		const isSelected = selectedStablecoinOverride?.address === route.actualToToken?.address;
+		const isDefault = index === 0 && !selectedStablecoinOverride;
+
+		if (isSelected) return '#3b82f6'; // Blue for manually selected
+		if (isDefault) return '#f0f9ff'; // Light blue for default
+		return 'transparent'; // Default background
+	};
+
+	// Calculate price impact relative to selected stablecoin (or best route if no selection)
+	const getRelativePriceImpact = (route: IFinalRoute) => {
+		const referenceRoute = getEffectiveRoute();
+
+		if (!referenceRoute || !referenceRoute.netOut || !route.netOut || route.netOut <= 0) {
+			return null;
+		}
+
+		// Calculate price impact relative to the reference route (selected or best)
+		const priceImpact = ((route.netOut / referenceRoute.netOut) - 1) * 100;
+
+		return Number.isFinite(priceImpact) ? priceImpact : null;
+	};
 
 	// Calculate price impact for the best route (for TO input display)
 	const bestRoutesPriceImpact =
@@ -1297,14 +1382,15 @@ export function AggregatorContainer() {
 							/>
 
 							<InputAmountAndTokenSelect
-								placeholder={normalizedRoutes[0]?.amount}
+								placeholder={getEffectiveRoute()?.amount}
 								setAmount={setAmount}
 								type="amountOut"
-								amount={normalizedRoutes[0]?.amount && amount !== '' ? normalizedRoutes[0].amount : amountOut}
+								amount={getEffectiveRoute()?.amount && amount !== '' ? getEffectiveRoute().amount : amountOut}
 								onSelectTokenChange={onToTokenChange}
 								balance={toTokenBalance.data?.formatted}
 								tokenPrice={toTokenPrice}
 								priceImpact={bestRoutesPriceImpact}
+								actualToToken={getEffectiveActualToToken()}
 							/>
 						</Flex>
 
@@ -1549,33 +1635,31 @@ export function AggregatorContainer() {
 							</Text>
 						) : null}
 
-						<Disclaimer>
-							<p>Powered by</p>
-							<Image src={iconLlamaswap.src} alt="Llamaswap" />
-							<div style={{
-								display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '16px', position: 'absolute', top: '0', left: '0', width: '60%',
-								height: '100%', backgroundColor: '#F1F4F8', borderRadius: '20px', padding: '30px'
-							}}>
-								<Image src={iconDisclaimer.src} alt="Disclaimer" />
-								<p>Our converter uses the mid-market rate for reference only. It's provided for informational purposes — actual rates may vary when you make a transaction.</p>
-							</div>
-						</Disclaimer>
 					</Body>
 
-					<ConversionChart
-						fromToken={finalSelectedFromToken}
-						toToken={finalSelectedToToken || (effectiveToToken ? { ...effectiveToToken, geckoId: null } : null)}
-						chain={selectedChain?.value}
-					/>
+					{shouldShowConversionChart && (
+						<ConversionChart
+							fromToken={finalSelectedFromToken}
+							toToken={finalSelectedToToken || (effectiveToToken ? { ...effectiveToToken, geckoId: null } : null)}
+							chain={selectedChain?.value}
+						/>
+					)}
 					<FundingOptions
 						onTokenSelect={onFromTokenChange}
 						selectedRoute={selectedRoute}
 						normalizedRoutes={normalizedRoutes}
 					/>
 
-					<StablecoinSettlementWrapper>
-						<Image src={iconStablecoinSettlement.src} alt="Stablecoin Settlement" style={{ marginBottom: '16px' }} />
-						<Text fontSize="48px" fontWeight="bold">Stablecoin Settlement</Text>
+					<StablecoinSettlementWrapper id="stablecoin-settlement">
+						<Text fontSize="48px" fontWeight="bold" mt="40px">STABLECOIN SETTLEMENT</Text>
+						<Text
+							fontSize={{ base: "10px", sm: "11px", md: "14px" }}
+							color="gray.500"
+							lineHeight="1.4"
+							mt="8px"
+						>
+							Select a route to perform a swap
+						</Text>
 					</StablecoinSettlementWrapper>
 
 					<Routes ref={routesRef} visible={uiState === STATES.ROUTES}>
@@ -1603,9 +1687,7 @@ export function AggregatorContainer() {
 						) : null}
 
 						{normalizedRoutes?.length ? (
-							<Flex as="h1" alignItems="center" justifyContent="space-between">
-								<FormHeader as="span"> Select a route to perform a swap </FormHeader>
-
+							<Flex as="h1" alignItems="center" justifyContent="flex-end">
 								<RefreshIcon refetch={refetch} lastFetched={lastFetched} />
 							</Flex>
 						) : !isLoading &&
@@ -1633,13 +1715,87 @@ export function AggregatorContainer() {
 										<th>Stablecoin</th>
 										<th>
 											<div style={{ textAlign: 'left' }}>
-												Volatility Score
-												<div style={{ fontSize: '10px', fontWeight: 'normal', textAlign: 'left' }}>via Santiment</div>
+												<Tooltip
+													content={
+														<div>
+															<strong>Max 30d Deviation</strong><br />
+															30-day maximum absolute price deviation from par.<br />
+															Lower percentage = more stable.
+														</div>
+													}
+												>
+													<span style={{ color: '#9FACB4' }}>
+														Max 30d Deviation
+													</span>
+												</Tooltip>
+												<div style={{ fontSize: '10px', fontWeight: 'normal', textAlign: 'left' }}>
+													<a href="https://dune.com/queries/5509168" target="_blank" rel="noopener noreferrer" style={{ color: '#60A5FA', textDecoration: 'none' }}>
+														by Dune
+													</a>
+												</div>
 											</div>
 										</th>
-										<th>Liquidity Score</th>
-										<th>Risk Score</th>
-										<th>Price Impact</th>
+										<th>
+											<div style={{ textAlign: 'left' }}>
+												<Tooltip
+													content={
+														<div>
+															<strong>24h Volume</strong><br />
+															Combined on-chain and CEX trading volume over last 24 hours.<br />
+															Higher volume indicates better liquidity.
+														</div>
+													}
+												>
+													<span style={{ color: '#9FACB4' }}>
+														24h Volume
+													</span>
+												</Tooltip>
+												<div style={{ fontSize: '10px', fontWeight: 'normal', textAlign: 'left' }}>
+													<a href="https://dune.com/queries/5512114" target="_blank" rel="noopener noreferrer" style={{ color: '#60A5FA', textDecoration: 'none' }}>
+														by Dune
+													</a>
+												</div>
+											</div>
+										</th>
+										<th>
+											<div style={{ textAlign: 'left' }}>
+												<Tooltip
+													content={
+														<div>
+															<strong>Risk Score</strong><br />
+															Independent risk assessment by Bluechip.<br />
+															Higher grades indicate lower risk.
+														</div>
+													}
+												>
+													<span style={{ color: '#9FACB4' }}>
+														Risk Score
+													</span>
+												</Tooltip>
+												<div style={{ fontSize: '10px', fontWeight: 'normal', textAlign: 'left' }}>
+													<a href="https://bluechip.org/" target="_blank" rel="noopener noreferrer" style={{ color: '#60A5FA', textDecoration: 'none' }}>
+														by Bluechip
+													</a>
+												</div>
+											</div>
+										</th>
+										<th>
+											<div style={{ textAlign: 'left' }}>
+												<Tooltip
+													content={
+														<div>
+															<strong>Price Impact</strong><br />
+															Percentage difference relative to selected stablecoin.<br />
+															Positive values indicate better rates than selected option.
+														</div>
+													}
+												>
+													<span style={{ color: '#9FACB4' }}>
+														Price Impact
+													</span>
+												</Tooltip>
+											</div>
+										</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -1662,12 +1818,19 @@ export function AggregatorContainer() {
 											<Fragment
 												key={`${selectedChain!.value}-${finalSelectedFromToken!.address}-${r.actualToToken?.address || r.name}-${r.name}`}
 											>
-												<tr style={{ backgroundColor: i === 0 ? '#f0f9ff' : 'transparent' }}>
+												<tr
+													style={{
+														backgroundColor: getRowBackgroundColor(r, i),
+														cursor: 'pointer',
+														transition: 'background-color 0.2s ease'
+													}}
+													onClick={() => handleStablecoinRowClick(r)}
+												>
 													<td>
 														<SwapRoute
 															{...r}
 															index={i}
-															selected={aggregator === r.name}
+															selected={false}
 															setRoute={() => {
 																if (isSmallScreen) toggleUi();
 																setAggregator(r.name);
@@ -1690,22 +1853,32 @@ export function AggregatorContainer() {
 															chainId={selectedChain?.id}
 														/>
 													</td>
-													<td>TBU</td>
-													<td>TBU</td>
+													<td>
+														<VolumeCell
+															token={r.actualToToken || finalSelectedToToken || effectiveToToken!}
+															chainId={selectedChain?.id}
+														/>
+													</td>
+													<td>
+														<RiskScoreCell
+															token={r.actualToToken || finalSelectedToToken || effectiveToToken!}
+															chainId={selectedChain?.id}
+														/>
+													</td>
 													<td>
 														{(() => {
-															// Calculate price impact for this route using the new formula
-															if (normalizedRoutes[0] && normalizedRoutes[0].netOut && r.netOut && r.netOut > 0) {
-																const priceImpact = ((r.netOut / normalizedRoutes[0].netOut) - 1) * 100;
-																if (Number.isFinite(priceImpact)) {
-																	const color = priceImpact === 0 ? "#059669" : "#dc2626"; // Green for best route, red for others
-																	return (
-																		<Text as="span" color={color} fontSize={14} fontWeight={700}>
-																			{priceImpact > 0 ? '+' : ''}{priceImpact.toFixed(2)}%
-																		</Text>
-																	);
-																}
+															// Calculate price impact relative to selected stablecoin
+															const priceImpact = getRelativePriceImpact(r);
+
+															if (priceImpact !== null) {
+																const color = priceImpact === 0 ? "#059669" : priceImpact > 0 ? "#059669" : "#dc2626"; // Green for 0% or positive, red for negative
+																return (
+																	<Text as="span" color={color} fontSize={14} fontWeight={700}>
+																		{priceImpact > 0 ? '+' : ''}{priceImpact.toFixed(2)}%
+																	</Text>
+																);
 															}
+
 															// Fallback to "Unknown" if price impact can't be calculated
 															return (
 																<Text as="span" color="gray.400" fontSize={12}>

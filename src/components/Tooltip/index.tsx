@@ -16,13 +16,45 @@ interface ITooltip {
 const TooltipPopver = styled(AriaTooltip)`
 	font-size: 0.85rem;
 	padding: 1rem;
-	color: hsl(0, 0%, 100%);
-	background: hsl(204, 3%, 12%);
-	border: 1px solid hsl(204, 3%, 32%);
-	border-radius: 8px;
-	filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 40%));
+	color: hsl(220, 9%, 46%);
+	background: rgba(255, 255, 255, 0.85);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	border-radius: 12px;
+	box-shadow: 
+		0 8px 32px rgba(0, 0, 0, 0.08),
+		0 4px 16px rgba(0, 0, 0, 0.04),
+		inset 0 1px 0 rgba(255, 255, 255, 0.6);
 	max-width: 228px;
-`
+	position: relative;
+	z-index: 1000;
+	
+	&::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: linear-gradient(135deg, 
+			rgba(255, 255, 255, 0.1) 0%, 
+			rgba(255, 255, 255, 0.05) 50%, 
+			rgba(255, 255, 255, 0.1) 100%);
+		border-radius: inherit;
+		pointer-events: none;
+		z-index: -1;
+	}
+	
+	strong {
+		color: hsl(220, 15%, 20%);
+		font-weight: 600;
+	}
+	
+	br + br {
+		line-height: 0.4;
+	}
+`;
 
 const TooltipAnchor2 = styled(TooltipAnchor)`
 	overflow: hidden;
@@ -33,11 +65,11 @@ const TooltipAnchor2 = styled(TooltipAnchor)`
 	a {
 		display: flex;
 	}
-`
+`;
 
 const Popover2 = styled(TooltipPopver)`
 	padding: 12px;
-`
+`;
 
 export default function Tooltip({ content, as, href, shallow, onClick, children, ...props }: ITooltip) {
 	const tooltip = useTooltipState()

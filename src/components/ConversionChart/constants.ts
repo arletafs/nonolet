@@ -25,8 +25,8 @@ export const CHART_SERIES_NAMES = {
 };
 
 export const CHART_ICONS = {
-    MARKET_PRICE: '📈',
-    EXECUTION_PRICE: '⚡',
-    POSITIVE_TREND: '📈',
-    NEGATIVE_TREND: '📉'
+    MARKET_PRICE: '',
+    EXECUTION_PRICE: '',
+    POSITIVE_TREND: '+',
+    NEGATIVE_TREND: '-'
 }; 

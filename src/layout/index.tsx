@@ -63,7 +63,7 @@ const Hero = styled.div`
 `;
 
 const MirrorText = styled.div`
-	font-size: clamp(32px, 8vw, 84px);
+	font-size: clamp(24px, 6vw, 64px);
 	font-weight: bold;
 	background: linear-gradient(180deg, #F1F4F8 0%, #3793FF 100%);
 	-webkit-background-clip: text;
@@ -85,12 +85,12 @@ const MirrorText = styled.div`
 	}
 
 	&::after {
-		content: 'Stablecoin Converter';
+		content: 'All aggregators. All stablecoins. All at once.';
 		position: absolute;
 		top: 30%;
 		left: 0;
 		right: 0;
-		font-size: clamp(32px, 8vw, 84px);
+		font-size: clamp(24px, 6vw, 64px);
 		font-weight: bold;
 		background: linear-gradient(180deg, #F1F4F8 0%, #3793FF 100%);
 		-webkit-background-clip: text;
@@ -135,9 +135,9 @@ export default function Layout({ title, children, ...props }: ILayoutProps) {
 							<ConnectButton {...(props as any)} />
 						</Header>
 						<Hero>
-							<MirrorText>Stablecoin Converter</MirrorText>
-							<p style={{ fontSize: '32px', color: 'white', marginBottom: '10px', fontFamily: 'Urbanist', fontWeight: 'bold' }}>Fast, accurate, and effortless conversions.</p>
-							<p style={{ fontSize: '20px', color: 'white', fontFamily: 'Urbanist' }}>Your go-to tool for swapping stablecoins in seconds.</p>
+							<MirrorText>All aggregators. All stablecoins. All at once.</MirrorText>
+							{/* <p style={{ fontSize: '32px', color: 'white', marginBottom: '10px', fontFamily: 'Urbanist', fontWeight: 'bold' }}>All aggregators. All stablecoins. All at once.</p> */}
+							{/* <p style={{ fontSize: '20px', color: 'white', fontFamily: 'Urbanist' }}>All aggregators. All stablecoins. All at once.</p> */}
 						</Hero>
 						{children}
 					</Center>

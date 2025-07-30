@@ -1,19 +1,19 @@
 import React from 'react';
 import { Text, Skeleton } from '@chakra-ui/react';
-import { useFormattedStability } from '~/queries/useVolatilityScores';
+import { useFormattedVolume } from '~/queries/useVolumeData';
 import type { IToken } from '~/types';
 
-interface VolatilityScoreCellProps {
+interface VolumeCellProps {
     token: Partial<IToken> & { address: string; chainId?: number };
     chainId?: number;
 }
 
 /**
- * Component to display stability data for a stablecoin in the Settlement table
- * Shows raw volatility percentage (lower = more stable)
+ * Component to display 24h volume data for a stablecoin in the Settlement table
+ * Shows formatted volume in USD (e.g., $1.2B, $450M, $12K)
  */
-export function VolatilityScoreCell({ token, chainId }: VolatilityScoreCellProps) {
-    const { volatility, isLoading, error } = useFormattedStability(
+export function VolumeCell({ token, chainId }: VolumeCellProps) {
+    const { volume, isLoading, error } = useFormattedVolume(
         token.address,
         chainId || token.chainId || 1
     );
@@ -26,7 +26,7 @@ export function VolatilityScoreCell({ token, chainId }: VolatilityScoreCellProps
     }
 
     // Error or no data state
-    if (error || volatility === '--') {
+    if (error || volume === '--') {
         return (
             <Text color="gray.400" fontSize={14}>
                 --
@@ -41,7 +41,7 @@ export function VolatilityScoreCell({ token, chainId }: VolatilityScoreCellProps
                 fontWeight={600}
                 lineHeight="1.2"
             >
-                {volatility}
+                {volume}
             </Text>
         </div>
     );

@@ -8,6 +8,17 @@ import { PRICE_IMPACT_HIGH_THRESHOLD, PRICE_IMPACT_MEDIUM_THRESHOLD } from '../A
 import { TokenSelect } from './TokenSelect';
 import styled from 'styled-components';
 
+const ClickableStablecoin = styled.span`
+	cursor: pointer;
+	text-decoration: none;
+	border-bottom: 1px dotted currentColor;
+	transition: opacity 0.2s ease;
+	
+	&:hover {
+		opacity: 0.7;
+	}
+`;
+
 export const Container = (props: FlexProps & { type?: 'amountIn' | 'amountOut' }) => {
 	const { type, ...flexProps } = props;
 
@@ -89,7 +100,8 @@ export function InputAmountAndTokenSelect({
 	priceImpact,
 	placeholder,
 	customSelect,
-	disabled = false
+	disabled = false,
+	actualToToken
 }: {
 	amount: string | number;
 	setAmount: Dispatch<SetStateAction<[string | number, string | number]>>;
@@ -102,6 +114,7 @@ export function InputAmountAndTokenSelect({
 	placeholder?: string | number;
 	customSelect?: React.ReactElement;
 	disabled?: boolean;
+	actualToToken?: { symbol: string } | null;
 }) {
 	const amountUsd =
 		amount && tokenPrice && !Number.isNaN(Number(formatAmount(amount))) && !Number.isNaN(Number(tokenPrice))
@@ -139,7 +152,25 @@ export function InputAmountAndTokenSelect({
 				<AmountUsd>
 					{amountUsd && (
 						<>
-							<span>{`~$${formattedNum(amountUsd)}`}</span>
+							<span>
+								{type === 'amountOut' && actualToToken?.symbol
+									? (
+										<>
+											{`~$${formattedNum(amountUsd)} in `}
+											<ClickableStablecoin
+												onClick={() => {
+													const element = document.getElementById('stablecoin-settlement');
+													if (element) {
+														element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+													}
+												}}
+											>
+												{actualToToken.symbol}
+											</ClickableStablecoin>
+										</>
+									)
+									: `~$${formattedNum(amountUsd)}`}
+							</span>
 							<Text
 								as="span"
 								color={

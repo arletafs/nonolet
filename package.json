@@ -19,6 +19,7 @@
 		"@chakra-ui/react": "2.8.2",
 		"@chakra-ui/system": "^2.6.2",
 		"@defillama/sdk": "^3.0.25",
+		"@duneanalytics/client-sdk": "^0.2.5",
 		"@emotion/react": "^11",
 		"@emotion/styled": "^11",
 		"@rainbow-me/rainbowkit": "2.1.6",

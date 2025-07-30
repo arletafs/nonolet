@@ -20,11 +20,12 @@ export function useQueryParams() {
 
 	const chainName = typeof chainOnURL === 'string' ? chainOnURL.toLowerCase() : 'ethereum';
 	const fromTokenAddress = typeof fromToken === 'string' ? fromToken.toLowerCase() : null;
-	
+
 	// Preserve case for fiat currencies, convert to lowercase for regular tokens
-	const toTokenAddress = typeof toToken === 'string' 
+	// Default to USD when no 'to' parameter is provided
+	const toTokenAddress = typeof toToken === 'string'
 		? (fiatCurrencyMappings[toToken.toUpperCase()] ? toToken.toUpperCase() : toToken.toLowerCase())
-		: null;
+		: 'USD';
 
 	useEffect(() => {
 		if (router.isReady && !chainOnURL) {
@@ -35,7 +36,7 @@ export function useQueryParams() {
 				router.push(
 					{
 						pathname: '/',
-						query: { ...query, chain: chain.value, from: zeroAddress, tab: 'swap' }
+						query: { ...query, chain: chain.value, from: zeroAddress, to: 'USD', tab: 'swap' }
 					},
 					undefined,
 					{ shallow: true }
@@ -45,7 +46,7 @@ export function useQueryParams() {
 				router.push(
 					{
 						pathname: '/',
-						query: { ...query, chain: 'ethereum', from: zeroAddress, tab: 'swap' }
+						query: { ...query, chain: 'ethereum', from: zeroAddress, to: 'USD', tab: 'swap' }
 					},
 					undefined,
 					{ shallow: true }
@@ -53,6 +54,20 @@ export function useQueryParams() {
 			}
 		}
 	}, [chainOnURL, chainOnWallet, isConnected, router]);
+
+	// Separate useEffect to handle setting USD default when no 'to' parameter exists
+	useEffect(() => {
+		if (router.isReady && chainOnURL && !router.query.to) {
+			router.push(
+				{
+					pathname: '/',
+					query: { ...router.query, to: 'USD' }
+				},
+				undefined,
+				{ shallow: true }
+			);
+		}
+	}, [router.isReady, chainOnURL, router.query.to]);
 
 	return { chainName, fromTokenAddress, toTokenAddress };
 }

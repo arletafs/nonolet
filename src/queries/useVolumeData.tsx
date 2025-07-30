@@ -1,26 +1,26 @@
 import { useQuery } from '@tanstack/react-query';
-import { duneService, StabilityData } from '~/services/dune';
+import { duneService, VolumeData } from '~/services/dune';
 
-export interface StabilityScoresData {
-    data: StabilityData[];
+export interface VolumeScoresData {
+    data: VolumeData[];
     isLoading: boolean;
     error: string | null;
 }
 
 /**
- * Hook to fetch stability data for all available stablecoins from Dune
+ * Hook to fetch volume data for all available stablecoins from Dune
  */
-export function useStabilityData() {
+export function useVolumeData() {
     const query = useQuery({
-        queryKey: ['stabilityData', 'dune', 'v1'],
-        queryFn: async (): Promise<StabilityData[]> => {
+        queryKey: ['volumeData', 'dune', 'v1'],
+        queryFn: async (): Promise<VolumeData[]> => {
             try {
-                // Get all stability data (raw volatility percentages)
-                const stabilityData = await duneService.getAllStabilityData();
-                return stabilityData;
+                // Get all volume data (24h volume in USD)
+                const volumeData = await duneService.getAllVolumeDataFormatted();
+                return volumeData;
             } catch (error) {
-                console.error('Error fetching stability data from Dune:', error);
-                throw new Error('Failed to fetch stability data');
+                console.error('Error fetching volume data from Dune:', error);
+                throw new Error('Failed to fetch volume data');
             }
         },
         staleTime: 5 * 60 * 1000, // 5 minutes
@@ -33,28 +33,28 @@ export function useStabilityData() {
 }
 
 /**
- * Hook to get stability data for a specific stablecoin by symbol
+ * Hook to get volume data for a specific stablecoin by symbol
  */
-export function useStablecoinStability(symbol: string) {
-    const { data: allStabilityData, isLoading, error } = useStabilityData();
+export function useStablecoinVolume(symbol: string) {
+    const { data: allVolumeData, isLoading, error } = useVolumeData();
 
-    const stabilityData = allStabilityData?.find(s =>
-        s.symbol.toLowerCase() === symbol.toLowerCase()
+    const volumeData = allVolumeData?.find(v =>
+        v.symbol.toLowerCase() === symbol.toLowerCase()
     ) || null;
 
     return {
-        data: stabilityData,
+        data: volumeData,
         isLoading,
         error,
-        hasData: !!stabilityData
+        hasData: !!volumeData
     };
 }
 
 /**
- * Hook to get stability data for a stablecoin by contract address and chainId
+ * Hook to get volume data for a stablecoin by contract address and chainId
  * This requires a mapping from address/chainId to symbol
  */
-export function useStablecoinStabilityByAddress(address: string, chainId: number) {
+export function useStablecoinVolumeByAddress(address: string, chainId: number) {
     // Map common stablecoin addresses to symbols
     const getSymbolFromAddress = (address: string, chainId: number): string | null => {
         const addressLower = address.toLowerCase();
@@ -102,18 +102,18 @@ export function useStablecoinStabilityByAddress(address: string, chainId: number
     };
 
     const symbol = getSymbolFromAddress(address, chainId);
-    return useStablecoinStability(symbol || '');
+    return useStablecoinVolume(symbol || '');
 }
 
 /**
- * Hook to get stability data for multiple stablecoins by their addresses
+ * Hook to get volume data for multiple stablecoins by their addresses
  */
-export function useMultipleStablecoinStability(
+export function useMultipleStablecoinVolume(
     tokens: Array<{ address: string; chainId: number }>
 ) {
-    const { data: allStabilityData, isLoading, error } = useStabilityData();
+    const { data: allVolumeData, isLoading, error } = useVolumeData();
 
-    const stabilityData = tokens.map(token => {
+    const volumeData = tokens.map(token => {
         // Use the same mapping logic as above
         const getSymbolFromAddress = (address: string, chainId: number): string | null => {
             const addressLower = address.toLowerCase();
@@ -145,8 +145,8 @@ export function useMultipleStablecoinStability(
         };
 
         const symbol = getSymbolFromAddress(token.address, token.chainId);
-        const data = symbol ? allStabilityData?.find(s =>
-            s.symbol.toLowerCase() === symbol.toLowerCase()
+        const data = symbol ? allVolumeData?.find(v =>
+            v.symbol.toLowerCase() === symbol.toLowerCase()
         ) || null : null;
 
         return {
@@ -157,32 +157,40 @@ export function useMultipleStablecoinStability(
     }).filter(item => item.data !== null);
 
     return {
-        data: stabilityData,
+        data: volumeData,
         isLoading,
         error,
-        hasData: stabilityData.length > 0
+        hasData: volumeData.length > 0
     };
 }
 
 /**
- * Helper hook to get stability data formatted for display
+ * Helper hook to get volume data formatted for display
  */
-export function useFormattedStability(address: string, chainId: number) {
-    const { data: stabilityData, isLoading, error } = useStablecoinStabilityByAddress(address, chainId);
+export function useFormattedVolume(address: string, chainId: number) {
+    const { data: volumeData, isLoading, error } = useStablecoinVolumeByAddress(address, chainId);
 
-    const formatVolatility = (data: StabilityData | null): string => {
-        if (!data) return '--';
-        return `${data.volatility30d.toFixed(2)}%`;
+    const formatVolume = (data: VolumeData | null): string => {
+        if (!data || data.volume24h === 0) return '--';
+
+        const volume = data.volume24h;
+
+        if (volume >= 1_000_000_000) {
+            return `$${(volume / 1_000_000_000).toFixed(1)}B`;
+        }
+        if (volume >= 1_000_000) {
+            return `$${(volume / 1_000_000).toFixed(0)}M`;
+        }
+        if (volume >= 1_000) {
+            return `$${(volume / 1_000).toFixed(0)}K`;
+        }
+        return `$${volume.toFixed(0)}`;
     };
 
     return {
-        volatility: formatVolatility(stabilityData),
-        rawData: stabilityData,
+        volume: formatVolume(volumeData),
+        rawData: volumeData,
         isLoading,
         error
     };
-}
-
-// Legacy exports for backward compatibility
-export const useVolatilityScores = useStabilityData;
-export const useFormattedVolatilityScore = useFormattedStability; 
+} 

@@ -1,7 +1,6 @@
 import React from 'react';
 import {
-	Text,
-	Image
+	Text
 } from '@chakra-ui/react';
 import styled from 'styled-components';
 import { useAccount } from 'wagmi';
@@ -9,7 +8,6 @@ import { useTokenBalances } from '~/queries/useTokenBalances';
 import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { PRICE_IMPACT_WARNING_THRESHOLD } from '../Aggregator/constants';
 import { formattedNum } from '~/utils';
-import iconFundingOptions from '~/public/icon-funding-options.svg';
 
 // Stablecoin symbols for identification
 const stablecoins = [
@@ -277,11 +275,8 @@ export default function FundingOptions({ onTokenSelect, selectedRoute, normalize
 
 	return (
 		<FundingWrapper>
-			<Image src={iconFundingOptions.src} alt="Funding Options" style={{ marginBottom: '16px' }} />
-
 			<FundingHeader>
-				<Text fontSize="48px" fontWeight="bold">Funding options</Text>
-				<CurrencyIndicator>USD</CurrencyIndicator>
+				<Text fontSize="48px" fontWeight="bold" mt="40px">FUNDING OPTIONS</Text>
 			</FundingHeader>
 
 			<Subtitle>Best quote from selected asset</Subtitle>

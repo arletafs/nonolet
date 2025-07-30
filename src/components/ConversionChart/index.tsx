@@ -1,3 +1,6 @@
+'use client';
+
+import React from 'react';
 import * as echarts from 'echarts/core';
 import { SVGRenderer } from 'echarts/renderers';
 import { LineChart } from 'echarts/charts';
@@ -21,7 +24,6 @@ import { createTooltipFormatter } from './helpers';
 import { processChartData, createOracleChartData } from './chartUtils';
 
 // Assets
-import iconConversion from '~/public/icon-conversion.svg';
 import logo from '~/public/defillama-light-neutral.png';
 
 // Hooks
@@ -221,13 +223,16 @@ export default function ConversionChart({ fromToken, toToken, chain }: Conversio
 
 	return (
 		<ChartWrapper>
-			<Image src={iconConversion.src} alt="Conversion Chart" style={{ marginBottom: '16px' }} />
-			<Text fontSize="48px" fontWeight="bold">Conversion Chart</Text>
+			<Text fontSize="48px" fontWeight="bold" mt="40px">CONVERSION CHART</Text>
 
 			<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-				<p>
+				<Text
+					fontSize={{ base: "10px", sm: "11px", md: "14px" }}
+					color="gray.500"
+					lineHeight="1.4"
+				>
 					{tokenSymbol ? `${tokenSymbol} price: Historical market data vs current execution price` : 'Historical market prices vs current execution prices.'}
-				</p>
+				</Text>
 				<ChartFilters>
 					{(['1D', '1W', '1M'] as TimeFilter[]).map(filter => (
 						<ButtonFilter

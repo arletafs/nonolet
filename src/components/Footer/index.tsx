@@ -1,8 +1,9 @@
 import {
-	Image
+	Image,
+	Link
 } from '@chakra-ui/react';
 import styled from 'styled-components';
-import llamaSwapIcon from '~/public/llamaswap.png';
+import llamaSwapIcon from '~/public/loader.png';
 
 const FooterWrapper = styled.div`
 	display: flex;
@@ -24,15 +25,22 @@ const FooterWrapper = styled.div`
 
 export default function Footer() {
 	return <FooterWrapper>
-				<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '80%' }}>
-					<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: '10px' }}>
-						<span style={{ fontSize: '32px', fontWeight: '600' }}>Nonolet</span>
-						<span style={{ fontSize: '14px', fontWeight: '400', color: '#9FACB4' }}>Fast, accurate, and effortless conversions.</span>
-					</div>
-					<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-						<span style={{ fontSize: '14px', fontWeight: '400' }}>Powered by</span>
-						<Image src={llamaSwapIcon.src} alt="LlamaSwap" style={{ height: '20px' }} />
-					</div>
-				</div>
-			</FooterWrapper>
+		<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '80%' }}>
+			<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: '10px' }}>
+				<span style={{ fontSize: '32px', fontWeight: '600' }}>Nonolet</span>
+				<span style={{ fontSize: '14px', fontWeight: '400', color: '#9FACB4' }}>All aggregators. All stablecoins. All at once.</span>
+			</div>
+			<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+				<span style={{ fontSize: '14px', fontWeight: '400' }}>Powered by</span>
+				<Link
+					href="https://swap.defillama.com/?chain=ethereum&from=0x0000000000000000000000000000000000000000&tab=swap"
+					isExternal
+					style={{ display: 'flex', alignItems: 'center', gap: '5px', textDecoration: 'none' }}
+				>
+					<Image src={llamaSwapIcon.src} alt="LlamaSwap" style={{ height: '20px' }} />
+					<span style={{ fontSize: '14px', fontWeight: '400' }}>LlamaSwap</span>
+				</Link>
+			</div>
+		</div>
+	</FooterWrapper>
 }
