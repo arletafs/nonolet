@@ -11,7 +11,7 @@ export default function Aggregator() {
 
 	return (
 		<Layout
-			title={`Meta-dex aggregator - DefiLlama`}
+			title={`Nonolet - All aggregators. All stablecoins. All at once.`}
 			defaultSEO
 			onSettingsClick={settingsHandler}
 		>

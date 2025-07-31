@@ -45,16 +45,21 @@ class DuneService {
     private lastVolatilityFetchTime = 0;
     private lastVolumeFetchTime = 0;
     private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+    private readonly FALLBACK_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours for fallback data
 
     /**
-     * Fetch all volatility data from Dune via API route
+     * Fetch all volatility data from Dune via API route with fallback to cached data
      */
     async getAllVolatilityData(): Promise<DuneVolatilityRow[]> {
-        // Return cached data if it's still fresh
         const now = Date.now();
+
+        // Return cached data if it's still fresh (5 minutes for live data)
         if (this.cachedVolatilityData && (now - this.lastVolatilityFetchTime) < this.CACHE_DURATION) {
             return this.cachedVolatilityData;
         }
+
+        // If we have cached data but it's stale, we'll try to refresh but fall back to it if needed
+        const hasStaleCache = this.cachedVolatilityData && (now - this.lastVolatilityFetchTime) < this.FALLBACK_CACHE_DURATION;
 
         try {
             const response = await fetch('/api/dune/volatility', {
@@ -65,13 +70,23 @@ class DuneService {
             });
 
             if (!response.ok) {
-                throw new Error(`API error: ${response.status} ${response.statusText}`);
+                console.warn(`Dune volatility API returned ${response.status}: ${response.statusText}`);
+                if (hasStaleCache && this.cachedVolatilityData) {
+                    console.log('🔄 Using cached volatility data (API unavailable)');
+                    return this.cachedVolatilityData;
+                }
+                return [];
             }
 
             const result: VolatilityApiResponse = await response.json();
 
             if (result.error) {
-                throw new Error(result.error);
+                console.warn('Dune volatility API returned error:', result.error);
+                if (hasStaleCache && this.cachedVolatilityData) {
+                    console.log('🔄 Using cached volatility data (API error)');
+                    return this.cachedVolatilityData;
+                }
+                return [];
             }
 
             // Convert to the expected format
@@ -80,26 +95,35 @@ class DuneService {
                 max_abs_deviation_pct_last30d: result.volatilities[symbol]
             }));
 
-            // Cache the results
+            // Cache the live results
             this.cachedVolatilityData = rows;
             this.lastVolatilityFetchTime = now;
+            console.log('✅ Using live volatility data from Dune API');
 
             return rows;
         } catch (error) {
-            console.error('Error fetching volatility data from Dune API:', error);
+            console.warn('Error fetching volatility data from Dune API:', error);
+            if (hasStaleCache && this.cachedVolatilityData) {
+                console.log('🔄 Using cached volatility data (network error)');
+                return this.cachedVolatilityData;
+            }
             return [];
         }
     }
 
     /**
-     * Fetch all volume data from Dune via API route
+     * Fetch all volume data from Dune via API route with fallback to cached data
      */
     async getAllVolumeData(): Promise<DuneVolumeRow[]> {
-        // Return cached data if it's still fresh
         const now = Date.now();
+
+        // Return cached data if it's still fresh (5 minutes for live data)
         if (this.cachedVolumeData && (now - this.lastVolumeFetchTime) < this.CACHE_DURATION) {
             return this.cachedVolumeData;
         }
+
+        // If we have cached data but it's stale, we'll try to refresh but fall back to it if needed
+        const hasStaleCache = this.cachedVolumeData && (now - this.lastVolumeFetchTime) < this.FALLBACK_CACHE_DURATION;
 
         try {
             const response = await fetch('/api/dune/volume', {
@@ -110,13 +134,23 @@ class DuneService {
             });
 
             if (!response.ok) {
-                throw new Error(`API error: ${response.status} ${response.statusText}`);
+                console.warn(`Dune volume API returned ${response.status}: ${response.statusText}`);
+                if (hasStaleCache && this.cachedVolumeData) {
+                    console.log('🔄 Using cached volume data (API unavailable)');
+                    return this.cachedVolumeData;
+                }
+                return [];
             }
 
             const result: VolumeApiResponse = await response.json();
 
             if (result.error) {
-                throw new Error(result.error);
+                console.warn('Dune volume API returned error:', result.error);
+                if (hasStaleCache && this.cachedVolumeData) {
+                    console.log('🔄 Using cached volume data (API error)');
+                    return this.cachedVolumeData;
+                }
+                return [];
             }
 
             // Convert to the expected format
@@ -127,13 +161,18 @@ class DuneService {
                 total_volume_usd: result.volumes[symbol] || 0
             }));
 
-            // Cache the results
+            // Cache the live results
             this.cachedVolumeData = rows;
             this.lastVolumeFetchTime = now;
+            console.log('✅ Using live volume data from Dune API');
 
             return rows;
         } catch (error) {
-            console.error('Error fetching volume data from Dune API:', error);
+            console.warn('Error fetching volume data from Dune API:', error);
+            if (hasStaleCache && this.cachedVolumeData) {
+                console.log('🔄 Using cached volume data (network error)');
+                return this.cachedVolumeData;
+            }
             return [];
         }
     }

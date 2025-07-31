@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import ThemeProvider, { GlobalStyle } from '~/Theme';
 import ConnectButton from '~/components/Aggregator/ConnectButton';
 import { SettingsIcon } from '@chakra-ui/icons';
+import NoIndexOnQuery from '~/components/NoIndexOnQuery';
 
 const PageWrapper = styled.div`
 	flex: 1;
@@ -142,12 +143,50 @@ export default function Layout({ title, children, onSettingsClick, ...props }: I
 		<>
 			<Head>
 				<title>{title}</title>
+
+				{/* Favicon */}
 				<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 				<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 				<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
 				<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 				<link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+
+				{/* Basic SEO */}
+				<meta name="description" content="Nonolet - The ultimate DEX aggregator. Compare prices across all major DEXs and swap stablecoins with the best rates. All aggregators. All stablecoins. All at once." />
+				<meta name="keywords" content="DEX aggregator, cryptocurrency, DeFi, stablecoin swap, best rates, decentralized exchange, crypto trading" />
+				<meta name="author" content="Nonolet" />
+				<meta name="robots" content="index, follow" />
+				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 				<meta name="theme-color" content="#131926" />
+
+				{/* Open Graph / Facebook */}
+				<meta property="og:type" content="website" />
+				<meta property="og:url" content="https://nonolet.xyz/" />
+				<meta property="og:title" content="Nonolet - All aggregators. All stablecoins. All at once." />
+				<meta property="og:description" content="The ultimate DEX aggregator. Compare prices across all major DEXs and swap stablecoins with the best rates." />
+				<meta property="og:image" content="https://nonolet.xyz/android-chrome-512x512.png" />
+				<meta property="og:site_name" content="Nonolet" />
+
+				{/* Twitter */}
+				<meta property="twitter:card" content="summary_large_image" />
+				<meta property="twitter:url" content="https://nonolet.xyz/" />
+				<meta property="twitter:title" content="Nonolet - All aggregators. All stablecoins. All at once." />
+				<meta property="twitter:description" content="The ultimate DEX aggregator. Compare prices across all major DEXs and swap stablecoins with the best rates." />
+				<meta property="twitter:image" content="https://nonolet.xyz/android-chrome-512x512.png" />
+
+				{/* Additional SEO */}
+				<meta name="application-name" content="Nonolet" />
+				<meta name="apple-mobile-web-app-title" content="Nonolet" />
+				<meta name="apple-mobile-web-app-capable" content="yes" />
+				<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+				<meta name="format-detection" content="telephone=no" />
+				<meta name="mobile-web-app-capable" content="yes" />
+
+				{/* Security */}
+				<meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+				<meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
+
+				<NoIndexOnQuery />
 			</Head>
 			{/* <Phishing /> */}
 			<ThemeProvider>
