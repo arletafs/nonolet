@@ -178,7 +178,7 @@ export default function Footer() {
 						</Button>
 						<span style={{ fontSize: '12px', fontWeight: '400' }}>Powered by</span>
 						<Link
-							href="https://swap.defillama.com/?chain=ethereum&from=0x0000000000000000000000000000000000000000&tab=swap"
+							href="https://swap.defillama.com/?chain=ethereum&from=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2&tab=swap"
 							isExternal
 							style={{ display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'none' }}
 						>
