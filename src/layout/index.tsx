@@ -1,6 +1,5 @@
 import * as React from 'react';
 import Head from 'next/head';
-import Image from 'next/image';
 import styled from 'styled-components';
 import ThemeProvider, { GlobalStyle } from '~/Theme';
 import ConnectButton from '~/components/Aggregator/ConnectButton';
@@ -41,35 +40,6 @@ const Center = styled.main`
 	}
 `;
 
-const Hero = styled.div`
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: flex-start;
-	padding-top: 30px;
-	width: 100%;
-	height: 50vh;
-	border-radius: 16px;
-	position: relative;
-	overflow: hidden;
-	min-height: 300px;
-
-	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
-		height: 80vh;
-		border-radius: 30px;
-		padding-top: 80px;
-	}
-`;
-
-const HeroImageContainer = styled.div`
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	z-index: -1;
-`;
-
 const WalletButtonContainer = styled.div`
 	position: absolute;
 	top: 20px;
@@ -78,6 +48,7 @@ const WalletButtonContainer = styled.div`
 	display: flex;
 	align-items: center;
 	gap: 12px;
+	margin: 20px;
 
 	@media screen and (min-width: ${({ theme }) => theme.bpMed}) {
 		top: 30px;
@@ -86,55 +57,78 @@ const WalletButtonContainer = styled.div`
 	}
 `;
 
-const MirrorText = styled.div`
-	font-size: clamp(24px, 6vw, 64px);
-	font-weight: bold;
-	background: linear-gradient(180deg, #F1F4F8 0%, #3793FF 100%);
-	-webkit-background-clip: text;
-	background-clip: text;
-	-webkit-text-fill-color: transparent;
-	color: transparent;
-	position: relative;
-	font-family: 'Urbanist';
+const MobileWarningContainer = styled.div`
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	min-height: 100vh;
+	padding: 20px;
 	text-align: center;
-	max-width: 100%;
-	white-space: nowrap;
-	padding-bottom: 50px;
-
-	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
-		white-space: normal;
-		word-break: break-word;
-		line-height: 1.1;
-		padding-bottom: 40px;
-	}
-
-	&::after {
-		content: 'All aggregators. All stablecoins. All at once.';
-		position: absolute;
-		top: 30%;
-		left: 0;
-		right: 0;
-		font-size: clamp(24px, 6vw, 64px);
-		font-weight: bold;
-		background: linear-gradient(180deg, #F1F4F8 0%, #3793FF 100%);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		color: transparent;
-		transform: scaleY(-1);
-		opacity: 0.2;
-		mask: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
-		-webkit-mask: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
-		white-space: nowrap;
-		text-align: center;
-		pointer-events: none;
-
-		@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
-			white-space: normal;
-			word-break: break-word;
-		}
-	}
+	background: ${({ theme }) => theme.bg1};
+	color: ${({ theme }) => theme.text1};
 `;
+
+const MobileWarningContent = styled.div`
+	max-width: 400px;
+	padding: 40px;
+	border-radius: 12px;
+	background: ${({ theme }) => theme.bg2};
+	border: 1px solid ${({ theme }) => theme.bg3};
+`;
+
+const MobileWarningTitle = styled.h1`
+	font-size: 24px;
+	font-weight: 600;
+	margin-bottom: 16px;
+	color: ${({ theme }) => theme.text1};
+`;
+
+const MobileWarningText = styled.p`
+	font-size: 16px;
+	line-height: 1.5;
+	margin-bottom: 20px;
+	color: ${({ theme }) => theme.text2};
+`;
+
+const DesktopIcon = styled.div`
+	font-size: 48px;
+	margin-bottom: 20px;
+`;
+
+// Hook to detect mobile devices
+const useIsMobile = () => {
+	const [isMobile, setIsMobile] = React.useState(false);
+
+	React.useEffect(() => {
+		const checkDevice = () => {
+			const isSmallScreen = window.innerWidth <= 1024;
+			setIsMobile(isSmallScreen);
+		};
+
+		checkDevice();
+		window.addEventListener('resize', checkDevice);
+		
+		return () => window.removeEventListener('resize', checkDevice);
+	}, []);
+
+	return isMobile;
+};
+
+const MobileWarning = () => (
+	<MobileWarningContainer>
+		<MobileWarningContent>
+			<DesktopIcon>🖥️</DesktopIcon>
+			<MobileWarningTitle>Desktop Only</MobileWarningTitle>
+			<MobileWarningText>
+				This application only works on desktop devices. Please visit us from a desktop or laptop computer for the full experience.
+			</MobileWarningText>
+			<MobileWarningText style={{ fontSize: '14px', opacity: 0.8 }}>
+				We're working on mobile support and will be available soon!
+			</MobileWarningText>
+		</MobileWarningContent>
+	</MobileWarningContainer>
+);
 
 interface ILayoutProps {
 	title: string;
@@ -146,6 +140,8 @@ interface ILayoutProps {
 }
 
 export default function Layout({ title, children, onSettingsClick, ...props }: ILayoutProps) {
+	const isMobile = useIsMobile();
+
 	return (
 		<>
 			<Head>
@@ -198,37 +194,25 @@ export default function Layout({ title, children, onSettingsClick, ...props }: I
 			{/* <Phishing /> */}
 			<ThemeProvider>
 				<GlobalStyle />
-				<PageWrapper>
-					<Center {...props}>
-						<Hero id="hero-section">
-							<HeroImageContainer>
-								<Image
-									src="/hero.png"
-									alt="Nonolet DEX Aggregator Hero Background"
-									fill
-									priority
-									sizes="100vw"
-									style={{
-										objectFit: 'cover',
-										objectPosition: 'center',
-									}}
-								/>
-							</HeroImageContainer>
-							<WalletButtonContainer>
-								<ConnectButton {...(props as any)} />
-								<SettingsIcon
-									onClick={onSettingsClick}
-									cursor="pointer"
-									color="white"
-									boxSize={4}
-									_hover={{ color: 'gray.200' }}
-								/>
-							</WalletButtonContainer>
-							<MirrorText>All aggregators. All stablecoins. All at once.</MirrorText>
-						</Hero>
-						{children}
-					</Center>
-				</PageWrapper>
+				{isMobile ? (
+					<MobileWarning />
+				) : (
+					<PageWrapper>
+						<Center {...props}>
+								<WalletButtonContainer>
+									<ConnectButton {...(props as any)} />
+									<SettingsIcon
+										onClick={onSettingsClick}
+										cursor="pointer"
+										color="white"
+										boxSize={4}
+										_hover={{ color: 'gray.200' }}
+									/>
+								</WalletButtonContainer>
+							{children}
+						</Center>
+					</PageWrapper>
+				)}
 			</ThemeProvider>
 		</>
 	);

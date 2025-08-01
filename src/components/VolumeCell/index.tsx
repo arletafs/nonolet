@@ -35,11 +35,12 @@ export function VolumeCell({ token, chainId }: VolumeCellProps) {
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Text
                 fontSize={14}
                 fontWeight={600}
                 lineHeight="1.2"
+                textAlign="center"
             >
                 {volume}
             </Text>

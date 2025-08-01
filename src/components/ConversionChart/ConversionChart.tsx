@@ -22,7 +22,6 @@ import { processChartData, createOracleChartData } from './chartUtils';
 
 // Assets
 import iconConversion from '~/public/icon-conversion.svg';
-import logo from '~/public/defillama-light-neutral.png';
 
 // Hooks
 import { useBinancePrice } from '~/queries/useBinancePrice';
@@ -103,17 +102,6 @@ export default function ConversionChart({ fromToken, toToken, chain }: Conversio
 				bottom: '10%',
 				top: '15%',
 				containLabel: true
-			},
-			graphic: {
-				type: 'image',
-				z: 0,
-				style: {
-					image: logo.src,
-					height: 30,
-					opacity: 0.1
-				},
-				left: 'center',
-				top: 'center'
 			},
 			tooltip: {
 				trigger: 'axis',

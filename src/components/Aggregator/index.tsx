@@ -5,6 +5,7 @@ import { useAddRecentTransaction, useConnectModal } from '@rainbow-me/rainbowkit
 import BigNumber from 'bignumber.js';
 import { ArrowRight } from 'react-feather';
 import styled from 'styled-components';
+import Image from 'next/image';
 import {
 	useToast,
 	Button,
@@ -123,19 +124,97 @@ enum STATES {
 	ROUTES
 }
 
+const Hero = styled.div`
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+	padding-top: 30px;
+	width: 100%;
+	position: relative;
+	overflow: hidden;
+	height: 650px;
+`;
+
+const HeroImageContainer = styled.div`
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: -1;
+	overflow: hidden;
+	border-radius: 40px;
+`;
+
+const MirrorText = styled.div`
+	font-size: clamp(24px, 6vw, 64px);
+	font-weight: bold;
+	background: linear-gradient(180deg, #F1F4F8 0%, #3793FF 100%);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	color: transparent;
+	position: relative;
+	font-family: 'Urbanist';
+	text-align: center;
+	max-width: 100%;
+	padding-top: 30px;
+	padding-bottom: 50px;
+
+	@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+		white-space: normal;
+		word-break: break-word;
+		line-height: 1.1;
+		padding-bottom: 40px;
+	}
+
+	&::after {
+		content: 'All aggregators. All stablecoins. All at once.';
+		position: absolute;
+		top: 40%;
+		left: 0;
+		right: 0;
+		font-size: clamp(24px, 6vw, 64px);
+		font-weight: bold;
+		background: linear-gradient(180deg, #F1F4F8 0%, #3793FF 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+		transform: scaleY(-1);
+		opacity: 0.2;
+		mask: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
+		-webkit-mask: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 70%);
+		white-space: nowrap;
+		text-align: center;
+		pointer-events: none;
+
+		@media screen and (max-width: ${({ theme }) => theme.bpMed}) {
+			white-space: normal;
+			word-break: break-word;
+		}
+	}
+`;
+
 const Body = styled.div`
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
 	padding: 24px;
-	width: 100%;
+	width: 80%;
 	align-self: flex-start;
 	z-index: 1;
 	background-color: #FFFFFF;
-	position: relative;
+	position: absolute;
 	border-radius: 30px;
 	text-align: left;
 	border-bottom: 15px solid #B0D2FA;
+	margin: 0 auto;
+	left: 50%;
+	transform: translateX(-50%);
+	top: 0;
+	margin-top: 200px;
 
 	/* @media screen and (min-width: ${({ theme }) => theme.bpLg}) {
 		position: sticky;
@@ -151,11 +230,7 @@ const Wrapper = styled.div`
 	flex-direction: column;
 	grid-row-gap: 20px;
 	margin: 0px auto 24px;
-	position: absolute;
 	align-items: center;
-	top: 32%;
-	left: 50%;
-	transform: translateX(-50%);
 
 	h1 {
 		font-weight: 500;
@@ -178,7 +253,8 @@ const Routes = styled.div<{ visible: boolean }>`
 	min-height: 100%;
 	overflow-x: hidden;
 	align-self: stretch;
-	width: 100%;
+	width: 80%;
+	margin: 0 auto;
 	background-color: #FFFFFF;
 
 	& > *:first-child {
@@ -209,7 +285,7 @@ const BodyWrapper = styled.div`
 	display: flex;
 	justify-content: center;
 	gap: 12px;
-	width: 80%;
+	width: 100%;
 	z-index: 1;
 	border-radius: 16px;
 	position: relative;
@@ -334,7 +410,8 @@ const StablecoinSettlementWrapper = styled.div`
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-    width: 100%;
+    width: 80%;
+	margin: 0 auto;
     height: 100%;
     border-radius: 12px;
 	color: #3B3B3B;
@@ -1512,6 +1589,20 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 				) : null}
 
 				<BodyWrapper>
+					<Hero id="hero-section">
+						<HeroImageContainer>
+							<Image 
+								src="/hero.png" 
+								alt="Nonolet DEX Aggregator" 
+								fill 
+								style={{ 
+									objectFit: 'cover',
+									objectPosition: 'center'
+								}} 
+							/>
+						</HeroImageContainer>
+						<MirrorText>All aggregators. All stablecoins. All at once.</MirrorText>
+					</Hero>
 					<Body>
 						<div>
 							<FormHeader>
@@ -1879,9 +1970,9 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 							<Table>
 								<thead>
 									<tr>
-										<th>Stablecoin</th>
+										<th style={{ textAlign: 'center' }}>Stablecoin</th>
 										<th>
-											<div style={{ textAlign: 'left' }}>
+											<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
 												<Tooltip
 													content={
 														<div>
@@ -1895,7 +1986,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 														Max 30d Deviation
 													</span>
 												</Tooltip>
-												<div style={{ fontSize: '10px', fontWeight: 'normal', textAlign: 'left' }}>
+												<div style={{ fontSize: '10px', fontWeight: 'normal', textAlign: 'center' }}>
 													<a href="https://dune.com/queries/5509168" target="_blank" rel="noopener noreferrer" style={{ color: '#60A5FA', textDecoration: 'none' }}>
 														via Dune
 													</a>
@@ -1903,7 +1994,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 											</div>
 										</th>
 										<th>
-											<div style={{ textAlign: 'left' }}>
+											<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
 												<Tooltip
 													content={
 														<div>
@@ -1917,7 +2008,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 														24h Volume
 													</span>
 												</Tooltip>
-												<div style={{ fontSize: '10px', fontWeight: 'normal', textAlign: 'left' }}>
+												<div style={{ fontSize: '10px', fontWeight: 'normal', textAlign: 'center' }}>
 													<a href="https://dune.com/queries/5512114" target="_blank" rel="noopener noreferrer" style={{ color: '#60A5FA', textDecoration: 'none' }}>
 														via Dune
 													</a>
@@ -1925,7 +2016,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 											</div>
 										</th>
 										<th>
-											<div style={{ textAlign: 'left' }}>
+											<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
 												<Tooltip
 													content={
 														<div>
@@ -1947,7 +2038,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 											</div>
 										</th>
 										<th>
-											<div style={{ textAlign: 'left' }}>
+											<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
 												<Tooltip
 													content={
 														<div>

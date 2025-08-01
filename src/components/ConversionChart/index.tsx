@@ -10,7 +10,7 @@ const ConversionChartComponent = dynamic(
 	() => import('./ConversionChartClient'),
 	{
 		loading: () => (
-			<Flex direction="column" align="center" p={8} minH="400px" justify="center">
+			<Flex direction="column" align="center" p={8} minH="400px" width="100%" justify="center">
 				<Spinner size="lg" color="blue.500" />
 				<Text mt={4} color="gray.600">Loading chart...</Text>
 			</Flex>

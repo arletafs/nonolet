@@ -55,7 +55,8 @@ const FundingWrapper = styled.div`
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-    width: 100%;
+    width: 80%;
+	margin: 0 auto;
     height: 100%;
     border-radius: 12px;
 	color: #3B3B3B;
@@ -258,7 +259,7 @@ export default function FundingOptions({ onTokenSelect, selectedRoute, normalize
 	return (
 		<FundingWrapper>
 			<FundingHeader>
-				<Text fontSize="48px" fontWeight="bold" mt="100px">FUNDING ASSET</Text>
+				<Text fontSize="48px" fontWeight="bold" mt="40px">FUNDING ASSET</Text>
 			</FundingHeader>
 
 			<Subtitle>Best quote from selected asset</Subtitle>
@@ -266,9 +267,9 @@ export default function FundingOptions({ onTokenSelect, selectedRoute, normalize
 			<FundingTable>
 				<TableHeader>
 					<tr>
-						<HeaderCell>Funding asset</HeaderCell>
-						<HeaderCell>Balance Value</HeaderCell>
-						<HeaderCell>Price Impact</HeaderCell>
+						<HeaderCell style={{ textAlign: 'center' }}>Funding asset</HeaderCell>
+						<HeaderCell style={{ textAlign: 'center' }}>Balance Value</HeaderCell>
+						<HeaderCell style={{ textAlign: 'center' }}>Price Impact</HeaderCell>
 					</tr>
 				</TableHeader>
 				<tbody>

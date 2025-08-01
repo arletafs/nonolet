@@ -34,7 +34,7 @@ export function RiskScoreCell({ token, chainId }: RiskScoreCellProps) {
     // If we have a grade and URL, make it a subtle clickable link
     if (riskData.url) {
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <a
                     href={riskData.url}
                     target="_blank"
@@ -62,6 +62,7 @@ export function RiskScoreCell({ token, chainId }: RiskScoreCellProps) {
                         fontSize={14}
                         fontWeight={600}
                         lineHeight="1.2"
+                        textAlign="center"
                     >
                         {riskData.grade}
                     </Text>

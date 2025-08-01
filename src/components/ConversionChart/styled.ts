@@ -5,11 +5,12 @@ export const ChartWrapper = styled.div`
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-    width: 100%;
+    width: 80%;
     height: 100%;
     border-radius: 12px;
 	color: #3B3B3B;
 	font-family: 'Urbanist', sans-serif;
+	margin: 0 auto;
 `;
 
 export const ChartFilters = styled.div`

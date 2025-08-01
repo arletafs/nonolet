@@ -72,7 +72,7 @@ const Route = ({
 			selected={selected}
 			best={index === 0}
 		>
-			<RouteRow>
+			<RouteRow style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
 				{inputAmount ? (
 					<Flex alignItems="baseline" gap="8px">
 						<Image src={fromToken?.logoURI} alt={fromToken?.symbol} width={24} height={24} />
