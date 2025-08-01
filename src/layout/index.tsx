@@ -1,5 +1,6 @@
 import * as React from 'react';
 import Head from 'next/head';
+import Image from 'next/image';
 import styled from 'styled-components';
 import ThemeProvider, { GlobalStyle } from '~/Theme';
 import ConnectButton from '~/components/Aggregator/ConnectButton';
@@ -41,9 +42,6 @@ const Center = styled.main`
 `;
 
 const Hero = styled.div`
-	background-image: url('/hero.png');
-	background-position: center;
-	background-repeat: no-repeat;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -61,6 +59,15 @@ const Hero = styled.div`
 		border-radius: 30px;
 		padding-top: 80px;
 	}
+`;
+
+const HeroImageContainer = styled.div`
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: -1;
 `;
 
 const WalletButtonContainer = styled.div`
@@ -194,6 +201,19 @@ export default function Layout({ title, children, onSettingsClick, ...props }: I
 				<PageWrapper>
 					<Center {...props}>
 						<Hero id="hero-section">
+							<HeroImageContainer>
+								<Image
+									src="/hero.png"
+									alt="Nonolet DEX Aggregator Hero Background"
+									fill
+									priority
+									sizes="100vw"
+									style={{
+										objectFit: 'cover',
+										objectPosition: 'center',
+									}}
+								/>
+							</HeroImageContainer>
 							<WalletButtonContainer>
 								<ConnectButton {...(props as any)} />
 								<SettingsIcon
@@ -205,8 +225,6 @@ export default function Layout({ title, children, onSettingsClick, ...props }: I
 								/>
 							</WalletButtonContainer>
 							<MirrorText>All aggregators. All stablecoins. All at once.</MirrorText>
-							{/* <p style={{ fontSize: '32px', color: 'white', marginBottom: '10px', fontFamily: 'Urbanist', fontWeight: 'bold' }}>All aggregators. All stablecoins. All at once.</p> */}
-							{/* <p style={{ fontSize: '20px', color: 'white', fontFamily: 'Urbanist' }}>All aggregators. All stablecoins. All at once.</p> */}
 						</Hero>
 						{children}
 					</Center>

@@ -8,26 +8,26 @@ export const formatSuccessToast = (variables) => {
 	const outAmount = variables.rawQuote?.outAmount ?? variables.rawQuote?.outputAmount ?? variables.rawQuote?.buyAmount;
 	return {
 		title: 'Transaction Success',
-		description: `Swapped ${
-			inAmount
-				? BigNumber(inAmount)
-						.div(10 ** Number(fromToken.decimals || 18))
-						.toFixed(3)
-				: ''
-		} ${fromToken.symbol} for ${
-			outAmount
+		description: `Swapped ${inAmount
+			? BigNumber(inAmount)
+				.div(10 ** Number(fromToken.decimals || 18))
+				.toFixed(3)
+			: ''
+			} ${fromToken.symbol} for ${outAmount
 				? BigNumber(outAmount)
-						.div(10 ** Number(toToken.decimals || 18))
-						.toFixed(3)
+					.div(10 ** Number(toToken.decimals || 18))
+					.toFixed(3)
 				: ''
-		} ${toToken.symbol} via ${variables.adapter}`,
+			} ${toToken.symbol} via ${variables.adapter}`,
 		status: 'success',
+		variant: 'solid-success',
 		duration: 10000,
 		isClosable: true,
 		position: 'top-right',
 		containerStyle: {
 			width: '100%',
-			maxWidth: '300px'
+			maxWidth: '350px',
+			marginTop: '20px'
 		}
 	} as const;
 };
@@ -51,12 +51,14 @@ export const formatErrorToast = (error, isFailed = false) => {
 		title: 'Transaction Failed',
 		description: errorMsg,
 		status: 'error',
+		variant: 'solid-error',
 		duration: 10000,
 		isClosable: true,
 		position: 'top-right',
 		containerStyle: {
 			width: '100%',
-			maxWidth: '300px'
+			maxWidth: '350px',
+			marginTop: '20px'
 		}
 	} as const;
 };
@@ -66,12 +68,14 @@ export const formatUnknownErrorToast = ({ title, message }) => {
 		title: title,
 		description: message,
 		status: 'error',
+		variant: 'solid-error',
 		duration: 10000,
 		isClosable: true,
 		position: 'top-right',
 		containerStyle: {
 			width: '100%',
-			maxWidth: '300px'
+			maxWidth: '350px',
+			marginTop: '20px'
 		}
 	} as const;
 };
@@ -84,26 +88,26 @@ export const formatSubmittedToast = (variables) => {
 	const outAmount = variables.rawQuote?.outAmount ?? variables.rawQuote?.outputAmount ?? variables.rawQuote?.buyAmount;
 	return {
 		title: 'Transaction Submitted',
-		description: `Swap ${
-			inAmount
-				? BigNumber(inAmount)
-						.div(10 ** Number(fromToken.decimals || 18))
-						.toFixed(3)
-				: ''
-		} ${fromToken.symbol} for ${
-			outAmount
+		description: `Swap ${inAmount
+			? BigNumber(inAmount)
+				.div(10 ** Number(fromToken.decimals || 18))
+				.toFixed(3)
+			: ''
+			} ${fromToken.symbol} for ${outAmount
 				? BigNumber(outAmount)
-						.div(10 ** Number(toToken.decimals || 18))
-						.toFixed(3)
+					.div(10 ** Number(toToken.decimals || 18))
+					.toFixed(3)
 				: ''
-		} ${toToken.symbol} via ${variables.adapter}`,
-		status: 'success',
+			} ${toToken.symbol} via ${variables.adapter}`,
+		status: 'info',
+		variant: 'solid-loading',
 		duration: 10000,
 		isClosable: true,
 		position: 'top-right',
 		containerStyle: {
 			width: '100%',
-			maxWidth: '300px'
+			maxWidth: '350px',
+			marginTop: '20px'
 		}
 	} as const;
 };

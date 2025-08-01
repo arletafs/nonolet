@@ -55,7 +55,6 @@ import { useSelectedChainAndTokens } from '~/hooks/useSelectedChainAndTokens';
 import { InputAmountAndTokenSelect } from '../InputAmountAndTokenSelect';
 import { ArrowBackIcon, ArrowForwardIcon, RepeatIcon } from '@chakra-ui/icons';
 import { Settings } from './Settings';
-import { formatAmount } from '~/utils/formatAmount';
 import { RefreshIcon } from '../RefreshIcon';
 import { zeroAddress } from 'viem';
 import { waitForCallsStatus, waitForTransactionReceipt } from 'wagmi/actions';
@@ -385,6 +384,9 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 		route: IFinalRoute;
 	} | null>(null);
 
+	// Ref to track last refetched override to prevent duplicate refetches
+	const lastRefetchedOverride = useRef<string | null>(null);
+
 	// mobile states
 	const [uiState, setUiState] = useState(STATES.INPUT);
 	const breakpoint = useBreakpoint();
@@ -398,7 +400,31 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 	const toast = useToast();
 
 	// debounce input amount and limit no of queries made to aggregators api, to avoid CORS errors
-	const debouncedAmountInAndOut = useDebounce(`${formatAmount(amount)}&&${formatAmount(amountOut)}`, 300);
+	// Fix: Handle thousand separators and ensure consistent amount formatting
+	const parseAmountString = (value: string | number): string => {
+		if (value === '' || value === 0 || value === null || value === undefined) return '0';
+		// Remove spaces (thousand separators) and handle both comma and dot as decimal separators
+		const cleanValue = String(value)
+			.replace(/\s/g, '') // Remove all spaces (thousand separators)
+			.replace(/,/g, '.'); // Convert comma decimal separator to dot
+		const numValue = Number(cleanValue);
+		return Number.isNaN(numValue) ? '0' : cleanValue;
+	};
+
+	// Helper function to format numbers with thousand space separators for display
+	const formatNumberWithSpaces = (value: string | number): string => {
+		if (!value || value === '' || value === 0) return '';
+		const stringValue = String(value);
+		let pattern = /(?=(?!^)\d{3}(?:\b|(?:\d{3})+)\b)/g;
+		if (stringValue.includes('.')) {
+			pattern = /(?=(?!^)\d{3}(?:\b|(?:\d{3})+)\b\.)/g;
+		}
+		return stringValue.replace(pattern, ' ');
+	};
+
+	const normalizedAmount = parseAmountString(amount);
+	const normalizedAmountOut = parseAmountString(amountOut);
+	const debouncedAmountInAndOut = useDebounce(`${normalizedAmount}&&${normalizedAmountOut}`, 300);
 	const [debouncedAmount, debouncedAmountOut] = debouncedAmountInAndOut.split('&&');
 
 	// get selected chain and tokens from URL query params
@@ -420,13 +446,23 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 
 
 
-	// format input amount of selected from token
-	const amountWithDecimals = BigNumber(debouncedAmount && debouncedAmount !== '' ? debouncedAmount : '0')
-		.times(BigNumber(10).pow(finalSelectedFromToken?.decimals || 18))
-		.toFixed(0);
-	const amountOutWithDecimals = BigNumber(debouncedAmountOut && debouncedAmountOut !== '' ? debouncedAmountOut : '0')
-		.times(BigNumber(10).pow(finalSelectedToToken?.decimals || 18))
-		.toFixed(0);
+	// format input amount of selected from token - with consistent zero handling
+	const amountWithDecimals = useMemo(() => {
+		const cleanAmount = debouncedAmount || '0';
+		const decimals = finalSelectedFromToken?.decimals || 18;
+		const result = BigNumber(cleanAmount).times(BigNumber(10).pow(decimals)).toFixed(0);
+		// Debug logging for amount issues
+		if (process.env.NODE_ENV === 'development' && cleanAmount !== '0' && result === '0') {
+			console.warn('⚠️ Amount calculation issue:', { cleanAmount, decimals, result });
+		}
+		return result;
+	}, [debouncedAmount, finalSelectedFromToken?.decimals]);
+
+	const amountOutWithDecimals = useMemo(() => {
+		const cleanAmountOut = debouncedAmountOut || '0';
+		const decimals = finalSelectedToToken?.decimals || 18;
+		return BigNumber(cleanAmountOut).times(BigNumber(10).pow(decimals)).toFixed(0);
+	}, [debouncedAmountOut, finalSelectedToToken?.decimals]);
 
 	// saved tokens list
 	const savedTokens = useGetSavedTokens(selectedChain?.id);
@@ -741,6 +777,20 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 		setSelectedStablecoinOverride(null);
 	}, [finalSelectedFromToken?.address, toTokenAddress, selectedChain?.id]);
 
+	// Refetch routes when stablecoin override changes to get fresh quotes
+	// Only refetch when actually selecting an override (not when clearing it)
+	useEffect(() => {
+		if (selectedStablecoinOverride?.address &&
+			lastRefetchedOverride.current !== selectedStablecoinOverride.address) {
+			console.log('🔄 Refetching routes for stablecoin override:', selectedStablecoinOverride.symbol);
+			lastRefetchedOverride.current = selectedStablecoinOverride.address;
+			refetch();
+		} else if (!selectedStablecoinOverride?.address) {
+			// Clear the ref when override is cleared
+			lastRefetchedOverride.current = null;
+		}
+	}, [selectedStablecoinOverride?.address]); // Only depend on the address change, not refetch function
+
 	// Settings modal toggle function
 	const handleSettingsToggle = useCallback(() => {
 		setSettingsModalOpen((open) => !open);
@@ -786,6 +836,21 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 			});
 			// Switch to the best aggregator for this specific stablecoin
 			setAggregator(route.name);
+
+			// Show toast notification that fresh quotes are being fetched
+			toast({
+				title: `Fetching fresh ${route.actualToToken?.symbol} quotes`,
+				status: 'info',
+				variant: 'solid-info',
+				duration: 2000,
+				isClosable: true,
+				position: 'top-right',
+				containerStyle: {
+					width: '100%',
+					maxWidth: '350px',
+					marginTop: '20px'
+				}
+			});
 		}
 
 		// Scroll back up to the hero section
@@ -1082,10 +1147,16 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 
 				confirmingTxToastRef.current = toast({
 					title: 'Confirming Transaction',
-					description: '',
+					description: 'Please wait while your transaction is being confirmed',
 					status: 'loading',
+					variant: 'solid-loading',
 					isClosable: true,
-					position: 'top-right'
+					position: 'top-right',
+					containerStyle: {
+						width: '100%',
+						maxWidth: '350px',
+						marginTop: '20px'
+					}
 				});
 
 				let isError = false;
@@ -1180,10 +1251,16 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 				//eip5792
 				confirmingTxToastRef.current = toast({
 					title: 'Confirming Transaction',
-					description: '',
+					description: 'Please wait while your transaction is being confirmed',
 					status: 'loading',
+					variant: 'solid-loading',
 					isClosable: true,
-					position: 'top-right'
+					position: 'top-right',
+					containerStyle: {
+						width: '100%',
+						maxWidth: '350px',
+						marginTop: '20px'
+					}
 				});
 
 				let isError = false;
@@ -1299,9 +1376,18 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 		) {
 			if (hasMaxPriceImpact && !isDegenModeEnabled) {
 				toast({
-					title: 'Price impact is too high!',
-					description: 'Swap is blocked, please try another route.',
-					status: 'error'
+					title: 'Price impact is too high',
+					description: 'Swap is blocked, please try another route',
+					status: 'error',
+					variant: 'solid-error',
+					duration: 8000,
+					isClosable: true,
+					position: 'top-right',
+					containerStyle: {
+						width: '100%',
+						maxWidth: '350px',
+						marginTop: '20px'
+					}
 				});
 				return;
 			}
@@ -1317,8 +1403,17 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 			) {
 				toast({
 					title: 'Signature needed for swap',
-					description: 'Swap is blocked, please try another route.',
-					status: 'error'
+					description: 'Swap is blocked, please try another route',
+					status: 'error',
+					variant: 'solid-error',
+					duration: 8000,
+					isClosable: true,
+					position: 'top-right',
+					containerStyle: {
+						width: '100%',
+						maxWidth: '350px',
+						marginTop: '20px'
+					}
 				});
 				return;
 			}
@@ -1355,7 +1450,7 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 		}
 	};
 
-	const isAmountSynced = debouncedAmount === formatAmount(amount) && formatAmount(amountOut) === debouncedAmountOut;
+	const isAmountSynced = debouncedAmount === normalizedAmount && debouncedAmountOut === normalizedAmountOut;
 	const isUnknownPrice = !fromTokenPrice || !toTokenPrice;
 	const isPriceImpactNotKnown = !bestRoutesPriceImpact && bestRoutesPriceImpact !== 0;
 
@@ -1450,10 +1545,10 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 							<SwapInputArrow />
 
 							<InputAmountAndTokenSelect
-								placeholder={getEffectiveRoute()?.amount}
+								placeholder={formatNumberWithSpaces(getEffectiveRoute()?.amount)}
 								setAmount={setAmount}
 								type="amountOut"
-								amount={getEffectiveRoute()?.amount && amount !== '' ? getEffectiveRoute().amount : amountOut}
+								amount={getEffectiveRoute()?.amount && amount !== '' ? formatNumberWithSpaces(getEffectiveRoute().amount) : amountOut}
 								onSelectTokenChange={onToTokenChange}
 								balance={toTokenBalance.data?.formatted}
 								tokenPrice={toTokenPrice}
@@ -1722,8 +1817,8 @@ export function AggregatorContainer({ onProvideSettingsHandler }: AggregatorCont
 						normalizedRoutes={normalizedRoutes}
 					/>
 
-					<StablecoinSettlementWrapper id="stablecoin-settlement">
-						<Text fontSize="48px" fontWeight="bold" mt="40px">STABLECOIN SETTLEMENT</Text>
+					<StablecoinSettlementWrapper id="quote-asset">
+						<Text fontSize="48px" fontWeight="bold" mt="40px">QUOTE ASSET</Text>
 						<Text
 							fontSize={{ base: "10px", sm: "11px", md: "14px" }}
 							color="gray.500"

@@ -115,11 +115,18 @@ export default function Footer() {
 				form.reset();
 
 				toast({
-					title: 'Feedback sent!',
-					description: 'Thank you for your feedback. We\'ll get back to you soon.',
+					title: 'Feedback sent',
+					description: 'Thank you for your feedback. We\'ll get back to you soon',
 					status: 'success',
+					variant: 'solid-success',
 					duration: 5000,
 					isClosable: true,
+					position: 'top-right',
+					containerStyle: {
+						width: '100%',
+						maxWidth: '350px',
+						marginTop: '20px'
+					}
 				});
 
 				// Close modal after reset
@@ -130,10 +137,17 @@ export default function Footer() {
 		} catch (error) {
 			toast({
 				title: 'Error',
-				description: 'Failed to send feedback. Please try again.',
+				description: 'Failed to send feedback. Please try again',
 				status: 'error',
+				variant: 'solid-error',
 				duration: 5000,
 				isClosable: true,
+				position: 'top-right',
+				containerStyle: {
+					width: '100%',
+					maxWidth: '350px',
+					marginTop: '20px'
+				}
 			});
 		} finally {
 			setIsSubmitting(false);

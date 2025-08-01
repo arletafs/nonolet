@@ -7,6 +7,7 @@ import { darkTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import '~/Theme/globals.css';
 import { config } from '~/components/WalletProvider';
+import liquidGlassTheme from '~/Theme/chakraTheme';
 
 const Provider = styled.div`
 	width: 100%;
@@ -27,7 +28,7 @@ function App({ Component, pageProps }) {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<HydrationBoundary state={pageProps.dehydratedState}>
-				<ChakraProvider>
+				<ChakraProvider theme={liquidGlassTheme}>
 					<DarkMode>
 						{isMounted && (
 							<WagmiProvider config={config}>

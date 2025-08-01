@@ -49,37 +49,22 @@ export function useBinancePrice({
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-                // Log detailed error for debugging
-                console.error(`Error in useBinancePrice for ${tokenSymbol}:`, errorMessage);
+                // Log detailed error for debugging but don't let it crash the app
+                console.warn(`Binance API error for ${tokenSymbol}:`, errorMessage);
 
-                // Don't retry for CORS-related errors as they won't resolve
-                if (errorMessage.includes('CORS restrictions') || errorMessage.includes('Unable to connect to Binance API')) {
-                    console.warn('Binance API unavailable due to CORS restrictions. Consider implementing a server-side proxy.');
-
-                    // Return empty data instead of throwing to allow app to continue
-                    return {
-                        bestMarket: null,
-                        price: null,
-                        chartData: []
-                    };
-                }
-
-                // For other errors, throw to trigger retry logic
-                throw error;
+                // Always return empty data instead of throwing to prevent runtime errors
+                // This ensures the chart system gracefully degrades when Binance is unavailable
+                return {
+                    bestMarket: null,
+                    price: null,
+                    chartData: []
+                };
             }
         },
         enabled: enabled && !!tokenSymbol,
         staleTime: 20_000, // 20 seconds
         refetchInterval,
-        retry: (failureCount, error) => {
-            // Don't retry CORS errors
-            const errorMessage = error instanceof Error ? error.message : '';
-            if (errorMessage.includes('CORS restrictions') || errorMessage.includes('Unable to connect to Binance API')) {
-                return false;
-            }
-            // Retry up to 2 times for other errors
-            return failureCount < 2;
-        },
+        retry: false, // Don't retry any errors to prevent runtime crashes
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     });
 

@@ -186,10 +186,10 @@ export default async function handler(
         res.setHeader('X-Content-Type-Options', 'nosniff');
         res.setHeader('X-Frame-Options', 'DENY');
 
-        // Import the Binance service function
-        const { getBinanceTokenPrice } = await import('~/services/binance');
+        // Import the direct Binance service function (avoids circular dependency)
+        const { getBinanceTokenPriceDirect } = await import('~/services/binance');
 
-        const result = await getBinanceTokenPrice(
+        const result = await getBinanceTokenPriceDirect(
             symbol,
             interval as '1d' | '1h' | '4h' | '15m',
             parsedLimit

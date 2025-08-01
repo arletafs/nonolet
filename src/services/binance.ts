@@ -183,9 +183,20 @@ async function getBinanceSymbols(): Promise<Set<string>> {
         lastCacheUpdate = now;
         return binanceSymbolsCache;
     } catch (error) {
-        console.warn('Failed to fetch Binance symbols:', error);
-        // Return fallback cache or empty set
-        return binanceSymbolsCache || new Set();
+        console.warn('Failed to fetch Binance symbols directly, using fallback symbol list:', error);
+
+        // Return a fallback set with common symbols including ETH
+        // This prevents the ETH chart from failing due to CORS issues
+        const fallbackSymbols = new Set([
+            'ETH', 'BTC', 'BNB', 'ADA', 'SOL', 'MATIC', 'DOT', 'AVAX', 'LINK',
+            'UNI', 'LTC', 'BCH', 'XRP', 'ETC', 'FIL', 'ATOM', 'VET', 'ICP',
+            'THETA', 'TRX', 'EOS', 'AAVE', 'MKR', 'COMP', 'SUSHI', 'CRV',
+            'YFI', 'SNX', 'BAL', 'LDO', 'ENS', 'OP', 'ARB', 'APE', 'SHIB',
+            'DOGE', 'USDC', 'USDT', 'BUSD', 'DAI', 'FRAX', 'TUSD', 'PAXG'
+        ]);
+
+        console.log('Using fallback symbol list with', fallbackSymbols.size, 'common symbols');
+        return fallbackSymbols;
     }
 }
 
@@ -289,8 +300,16 @@ export async function findBestUSDMarket(baseSymbol: string): Promise<string | nu
             return null;
         }
 
-        // Get 24hr ticker data for all symbols
-        const tickerData = await binanceRequest<BinanceTicker24hr[]>('/ticker/24hr');
+        // Get 24hr ticker data for all symbols - with CORS safety
+        let tickerData: BinanceTicker24hr[] = [];
+        try {
+            tickerData = await binanceRequest<BinanceTicker24hr[]>('/ticker/24hr');
+        } catch (error) {
+            // If ticker data fails, fall back to default market pattern
+            const defaultMarket = `${normalizedBase}USDT`;
+            console.log(`Ticker data failed for ${baseSymbol}, using default market: ${defaultMarket}`);
+            return defaultMarket;
+        }
 
         // Find all USD stablecoin markets for this token
         const usdMarkets = USD_STABLECOINS.map(stable => `${normalizedBase}${stable}`);
@@ -314,7 +333,8 @@ export async function findBestUSDMarket(baseSymbol: string): Promise<string | nu
 
         return bestMarket.symbol;
     } catch (error) {
-        console.error(`Error finding best USD market for ${baseSymbol}:`, error);
+        // This catch should rarely be reached now due to individual error handling above
+        console.log(`Final fallback for ${baseSymbol}:`, error instanceof Error ? error.message : 'Unknown error');
         return null;
     }
 }
@@ -334,7 +354,14 @@ export async function getBinancePrice(symbol: string): Promise<BinancePriceData 
             source: 'binance'
         };
     } catch (error) {
-        console.error(`Error fetching Binance price for ${symbol}:`, error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+        // Log CORS errors quietly, other errors more prominently  
+        if (errorMessage.includes('CORS restrictions') || errorMessage.includes('Unable to connect to Binance API')) {
+            console.log(`CORS error fetching price for ${symbol}, returning null`);
+        } else {
+            console.error(`Error fetching Binance price for ${symbol}:`, error);
+        }
         return null;
     }
 }
@@ -360,7 +387,14 @@ export async function getBinanceKlines(
             volume: parseFloat(kline[5]) // Volume
         }));
     } catch (error) {
-        console.error(`Error fetching Binance klines for ${symbol}:`, error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+        // Log CORS errors quietly, other errors more prominently
+        if (errorMessage.includes('CORS restrictions') || errorMessage.includes('Unable to connect to Binance API')) {
+            console.log(`CORS error fetching klines for ${symbol}, returning empty chart data`);
+        } else {
+            console.error(`Error fetching Binance klines for ${symbol}:`, error);
+        }
         return [];
     }
 }
@@ -368,6 +402,9 @@ export async function getBinanceKlines(
 /**
  * Get comprehensive price data for a token against USD stablecoins
  * Falls back to server-side proxy if direct API calls fail due to CORS
+ */
+/**
+ * Client-side function that uses server proxy to avoid CORS
  */
 export async function getBinanceTokenPrice(
     tokenSymbol: string,
@@ -379,13 +416,48 @@ export async function getBinanceTokenPrice(
     chartData: BinanceChartData[];
 } | null> {
     try {
-        // Try direct API calls first
+        // Skip direct API calls entirely and use server-side proxy to avoid CORS
+        console.log(`Fetching Binance data for ${tokenSymbol} via server proxy`);
+
+        const response = await fetch(`/api/binance/price?symbol=${encodeURIComponent(tokenSymbol)}&interval=${interval}&limit=${limit}`);
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Unknown server error' }));
+            console.log(`Server proxy error for ${tokenSymbol}:`, errorData.error || response.statusText);
+            return null;
+        }
+
+        const data = await response.json();
+        console.log(`Successfully fetched Binance data for ${tokenSymbol} via server proxy`);
+        return data;
+    } catch (error) {
+        // Final safety net - never let any error escape this function
+        console.log(`Error fetching Binance data for ${tokenSymbol}:`, error instanceof Error ? error.message : 'Unknown error');
+        return null;
+    }
+}
+
+/**
+ * Server-side function that makes direct API calls (used by /api/binance/price)
+ * This avoids circular dependency when server proxy imports this file
+ */
+export async function getBinanceTokenPriceDirect(
+    tokenSymbol: string,
+    interval: '1d' | '1h' | '4h' | '15m' = '1d',
+    limit: number = 30
+): Promise<{
+    bestMarket: string | null;
+    price: BinancePriceData | null;
+    chartData: BinanceChartData[];
+} | null> {
+    try {
+        // Direct API calls for server-side use
         const bestMarket = await findBestUSDMarket(tokenSymbol);
         if (!bestMarket) {
             return null;
         }
 
-        // Get current price and chart data
+        // Get current price and chart data using direct API calls
         const [priceData, chartData] = await Promise.all([
             getBinancePrice(bestMarket),
             getBinanceKlines(bestMarket, interval, limit)
@@ -394,31 +466,9 @@ export async function getBinanceTokenPrice(
         return {
             bestMarket,
             price: priceData,
-            chartData
+            chartData: chartData || []
         };
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-        // If CORS error, try the server-side proxy
-        if (errorMessage.includes('CORS restrictions') || errorMessage.includes('Unable to connect to Binance API')) {
-            console.log(`CORS error detected, falling back to server-side proxy for ${tokenSymbol}`);
-
-            try {
-                const response = await fetch(`/api/binance/price?symbol=${encodeURIComponent(tokenSymbol)}&interval=${interval}&limit=${limit}`);
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ error: 'Unknown server error' }));
-                    throw new Error(`Server proxy error: ${errorData.error || response.statusText}`);
-                }
-
-                const data = await response.json();
-                return data;
-            } catch (proxyError) {
-                console.error(`Server proxy also failed for ${tokenSymbol}:`, proxyError);
-                return null;
-            }
-        }
-
         console.error(`Error fetching Binance token price for ${tokenSymbol}:`, error);
         return null;
     }

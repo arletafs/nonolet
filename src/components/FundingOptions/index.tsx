@@ -258,7 +258,7 @@ export default function FundingOptions({ onTokenSelect, selectedRoute, normalize
 	return (
 		<FundingWrapper>
 			<FundingHeader>
-				<Text fontSize="48px" fontWeight="bold" mt="100px">FUNDING OPTIONS</Text>
+				<Text fontSize="48px" fontWeight="bold" mt="100px">FUNDING ASSET</Text>
 			</FundingHeader>
 
 			<Subtitle>Best quote from selected asset</Subtitle>
